@@ -1,0 +1,7 @@
+Jeff
+Michael
+Croy
+
+
+heuristic:  
+   based on what value is uncovered, check where the value of a small disk  should be based on the large disk value, 
