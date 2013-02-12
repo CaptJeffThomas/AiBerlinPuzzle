@@ -1,11 +1,31 @@
 #include<stdlib.h>
 #include<stdio.h>
-#include<stdbool.h>
 #include<string.h>
-#include<math.h>
+#include<time.h>
 #include"func.h"
 
+
+int seed_val(){
+  /* function returns seed value based on current
+     time in seconds */
+
+  time_t current = time(0);
+  struct tm *time = localtime(&current);
+  if(time == NULL){
+    printf("error extracting local time\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  //printf("%d\n",((time->tm_hour * 60) * 60) + (time->tm_min * 60) + time->tm_sec);
+  return (((time->tm_hour * 60) * 60) + (time->tm_min * 60) + time->tm_sec);
+}
+
 void disk_setup(int n, disk arr[]){
+
+  // call function to produce random seed with each call
+  int seed = seed_val();
+  srand(seed);
+
   // get random values for small and large disk n position
   short int l_r = (int)((double)rand() / ((double)RAND_MAX + 1) * ((n * n) + 1));
   short int s_r = (int)((double)rand() / ((double)RAND_MAX + 1) * ((n * n) + 1));
@@ -50,6 +70,8 @@ void disk_setup(int n, disk arr[]){
       }
     }
 
+
   }
   
 }
+

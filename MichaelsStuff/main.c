@@ -5,6 +5,7 @@
 
 int main(int argc, char *argv[])
 {
+
   /* read int from command line */
   int r;
   if(argv[1] != NULL){
