@@ -5,6 +5,8 @@
 #include<math.h>
 #include"func.h"
 
+#define NELEMS(x) (sizeof(x)/sizeof(x[0]))
+
 void disk_setup(int n, disk arr[]){
   // get random values for small and large disk n position
   short int l_r = (int)((double)rand() / ((double)RAND_MAX + 1) * ((n * n) + 1));
@@ -52,4 +54,19 @@ void disk_setup(int n, disk arr[]){
 
   }
   
+}
+
+void heuristic(int input, disk arr[]){
+  
+  int finalVal;
+  int size = (input * input) + 1;
+
+  printf("Heuristics:\n");
+
+  for (int i=0; i<size; i++){
+    finalVal=(int)(i/input)+1;
+    finalVal=arr[i].sml_val-finalVal;
+    printf("arr[%d] = %d\n", i, finalVal);
+  }
+  printf("\n");
 }
