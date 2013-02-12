@@ -27,6 +27,6 @@ typedef struct h_node {
 int seed_val();
 
 void disk_setup(int input, disk arr[]);
-
+void heuristic(int input, disk arr[]);
 
 #endif /* _AB_GAME_H_  */

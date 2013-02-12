@@ -4,6 +4,7 @@
 #include<time.h>
 #include"func.h"
 
+#define NELEMS(x) (sizeof(x)/sizeof(x[0]))
 
 int seed_val(){
   /* function returns seed value based on current
@@ -75,3 +76,18 @@ void disk_setup(int n, disk arr[]){
   
 }
 
+
+void heuristic(int input, disk arr[]){
+  
+  int finalVal;
+  int size = (input * input) + 1;
+
+  printf("Heuristics:\n");
+
+  for (int i=0; i<size; i++){
+    finalVal=(int)(i/input)+1;
+    finalVal=arr[i].sml_val-finalVal;
+    printf("arr[%d] = %d\n", i, finalVal);
+  }
+  printf("\n");
+}
