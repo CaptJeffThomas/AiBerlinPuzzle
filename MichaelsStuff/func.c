@@ -1,34 +1,55 @@
 #include<stdlib.h>
 #include<stdio.h>
+#include<stdbool.h>
 #include<string.h>
+#include<math.h>
 #include"func.h"
 
-void disk_setup(int n, int disk_type, int arr[]){
-  /* function sets a given integer array, base don the type
-     with the appropreiate values */
-  int r = rand() % n; //get random position for seperator
-  int vals = (n / 3);  // get possible alternating values
-  int num = vals;
-  int index= 0;
+void disk_setup(int n, disk arr[]){
+  // get random values for small and large disk n position
+  short int l_r = (int)((double)rand() / ((double)RAND_MAX + 1) * ((n * n) + 1));
+  short int s_r = (int)((double)rand() / ((double)RAND_MAX + 1) * ((n * n) + 1));
+  
+  // set possible value max (n), used as temporaray to assign
+  // values between 1 and n
+  short int l_max = n; 
+  short int s_max = n;
 
-  for(; index < n; index++){
-    if(index == r){
-      /* set location of n^2 +1 in large disk array
-       if array past is large, if not it remains 0*/
-      if(disk_type == LARGE){
-	arr[index] = (n / 3) + 1;
+  int index= 0;
+  for(; index < ((n * n) + 1); index++){
+
+    /* *** LARGE DISKS ***/
+
+    /* set random positon to palce the uncovered disk and n^2 + 1 value */
+    if(index == l_r){
+      arr[index].lrg_val = n + 1;
+    }
+    else {
+      arr[index].lrg_val = (n + 1) - l_max;    
+      /* decrement l_max */
+      l_max--;
+      /* reset l_max for next iteration of 1 through n */
+      if(l_max == 0){
+	l_max = n;
       }
     }
-    else{
-    /* loop from 1 to n/3 sequentially adding the values to 
-       large array index */
-      arr[index] = (vals + 1) - num;
-      /* decrement vals */
-      num--;
-      /* reset vals for next iteration if so */
-      if(num == 0){
-	num = vals;
+
+    /* *** SMALL DISKS *** */
+
+    /* set random positon to palce the uncovered disk and n^2 + 1 value */
+    if(index == s_r){
+      arr[index].sml_val = 0;
+    }
+    else {
+      arr[index].sml_val = (n + 1) - s_max;
+      /* decrement s_max */
+      s_max--;
+      /* reset s_max for next iteration of 1 through n */
+      if(s_max == 0){
+	s_max = n;
       }
     }
+
   }
+  
 }

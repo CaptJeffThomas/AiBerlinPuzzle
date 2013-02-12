@@ -9,26 +9,22 @@ int main(int argc, char *argv[])
   int r;
   if(argv[1] != NULL){
     r = atoi(argv[1]);
-  }
-  
+  }  
   /* initialize disk arrays */
-  int lrg_arr[r], sml_arr[r];
-  memset(lrg_arr,0,(r * sizeof(int)));
-  memset(sml_arr,0,(r * sizeof(int)));
+  int size = (r * r) + 1;
+  disk disks[size];
+  memset(disks,0,(size * sizeof(disk)));
 
   /* populate arrays with disk setup using function */
-  disk_setup(r,LARGE,lrg_arr);
-  disk_setup(r,SMALL,sml_arr);
+  disk_setup(r,disks);
 
   int x= 0;
-  for(; x < r; x++){
-    printf("%d ",lrg_arr[x]);
+  for(; x < size; x++){
+    printf("%d ",disks[x].lrg_val);
   }
   printf("\n");
-
-  int y= 0;
-  for(; y < r; y++){
-    printf("%d ",sml_arr[y]);
+  for(x= 0; x < size; x++){
+    printf("%d ",disks[x].sml_val);
   }
   printf("\n");
 
