@@ -12,24 +12,28 @@ int main(int argc, char *argv[])
     r = atoi(argv[1]);
   }  
   /* initialize disk arrays */
-  int size = (r * r) + 1;
-  disk disks[size];
-  memset(disks,0,(size * sizeof(disk)));
-
+  size_of_array = (r * r) + 1;
+  disk disks[size_of_array];
+  memset(disks,0,(size_of_array * sizeof(disk)));
+  
   /* populate arrays with disk setup using function */
   disk_setup(r,disks);
 
-  int x= 0;
-  for(; x < size; x++){
+  printf(" --- Large Disks --- \n");
+  for(int x = 0; x < size_of_array; x++){
     printf("%d ",disks[x].lrg_val);
   }
-  printf("\n");
-  for(x= 0; x < size; x++){
+  printf("\n\n");
+  /*for(x= 0; x < size; x++){
     printf("%d ",disks[x].sml_val);
   }
-  printf("\n");
+  printf("\n");*/
 
-  heuristic(r, disks);
+  //heuristic(r, disks);
 
+  mem_bound_A(disks);
+  
+  /* clear fringe before exit */
+  clear_queue();
   return 0;
 }

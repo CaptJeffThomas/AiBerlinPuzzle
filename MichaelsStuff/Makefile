@@ -1,7 +1,7 @@
 
 SHELL=/bin/bash
 CC=gcc
-CFLAGS=-Wall -g -std=c99
+CFLAGS=-std=c99 -Wall -g
 
 
 setup: main.c func.o 
