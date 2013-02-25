@@ -7,6 +7,51 @@
 
 #define NELEMS(x) (sizeof(x)/sizeof(x[0]))
 
+void usage()
+{
+  /* function produces usage message for user */
+  printf(" AB program imposes a single Agent Search Method to complete a game.\n\n \
+    NOTE: given no argumenta with a number to produce defined layout from \
+input.txt\n\n    Options:\n        -u    display usage message.\n        -r <number> \ 
+use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
+}
+
+void disk_setup(int input, disk arr[])
+{
+  /* function reads input from a file and puts values
+     into disk array */
+  FILE *fh = NULL;
+  if((fh = fopen("input.txt","r")) == NULL){
+    printf("ERROR: could not open file input.txt \n");
+    exit(EXIT_FAILURE);
+  }
+  
+  char line[input * 2];
+  /* read first line, put values into large disk array */
+  if(fgets(line,sizeof(line),fh) == NULL){
+    printf("ERROR: input.txt is empty\n");
+    exit(EXIT_FAILURE);
+  }
+  for(int x = 0, y = 0; x < (input * 2); x += 2, y++){
+    arr[y].lrg_val = atoi(line + x);
+  }
+
+  /* read new line from file(disgard it) */
+  fgets(line,sizeof(line),fh);
+
+  /* read second line, put values into small disk array */
+  if(fgets(line,sizeof(line),fh) == NULL){
+    printf("ERROR: second line of input.txt is empty\n");
+    exit(EXIT_FAILURE);
+  }
+  for(int x = 0, y = 0; x < (input * 2); x += 2, y++){
+    arr[y].sml_val = atoi(line + x);
+  }
+
+  fclose(fh); /* close file pointer */
+}
+
+
 int seed_val(){
   /* function returns seed value based on current
      time in seconds */
@@ -19,7 +64,7 @@ int seed_val(){
   return (((time->tm_hour * 60) * 60) + (time->tm_min * 60) + time->tm_sec);
 }
 
-void disk_setup(int n, disk arr[]){
+void random_disk_setup(int n, disk arr[]){
 
   // call function to produce random seed with each call
   int seed = seed_val();
@@ -125,7 +170,6 @@ void dequeue(node *current)
     free(del);
     del = NULL;
     fringe_tail = NULL;
-    //*current = fringe_tail;
   }
   else if(size_of_fringe > 1){
     for(; del->parent->parent != NULL; del = del->parent);
@@ -135,7 +179,6 @@ void dequeue(node *current)
     /* reset start of the queue */
     free(del->parent);
     del->parent = NULL;
-    //*current = del->parent;
   }
   else{
     printf("ERROR: fringe is empty can't dequeue\n");
@@ -207,7 +250,7 @@ void swap(int new_index, int disk_val, int current_index, short int arr[])
 {
   /* calculate new index value if pass new_index > arr_size, or < 0
    (Treats array as circular array) */
-  if(new_index > size_of_array){
+  if(new_index >= size_of_array){
     new_index = disk_val - (size_of_array - current_index);
   }
   if(new_index < 0){
@@ -228,23 +271,23 @@ void expand_node(int disk_val, int current_index, short int state[])
 
   int rstate = (int)((double)rand() / ((double)RAND_MAX + 1) * 4);
   switch(rstate){
-      case 0:
+  case 0:
 	/* right n */
 	swap(current_index + disk_val,disk_val,current_index,state);
 	break;
-      case 1:
+  case 1:
 	/* left n */
 	swap(current_index - disk_val,disk_val,current_index,state);
 	break;
-      case 2:
+  case 2:
 	/* right 1 */
 	swap(current_index + 1,disk_val,current_index,state);
-        break;
-      case 3:
+	break;
+  case 3:
 	/* left 1 */
 	swap(current_index - 1,disk_val,current_index,state);
   }
-  
+
   /* add random next state to fringe */
   enqueue(state);
   
@@ -258,15 +301,13 @@ void insert_all(node *current, disk arr[])
 
   /* find uncovered large disk value and its index */
   int disk_val, index;
-  index = 0;
-  while(index < size_of_array){
+  for(index = 0; index < size_of_array; index++){
     if(current->state[index] == 0){
       disk_val = arr[index].lrg_val;
       break;
     }
-    index++;
   }
-  
+
   /* initialize temp short int array to used as base for swapping*/
   short int temp[size_of_array];
   for(int x = 0; x < size_of_array; x++){
@@ -290,7 +331,6 @@ void mem_bound_A(disk arr[])
   }
   memset(current_node,0,(sizeof(node) + (size_of_array * sizeof(short int))));
 
-
   /* goal return value used for testing for goal state */
   int goal_state;
 
@@ -310,10 +350,10 @@ void mem_bound_A(disk arr[])
   /* enqueue first node into fringe (initial state of small disks) */
   enqueue(temp);
 
-  printf(" --- Initial State ---\n");
+  printf("Solution is: \n");
 
   int z = 0;
-  while( z < 10){
+  while( z < 30){
     /* check to see if fringe is empty, if so return failure */
     if(size_of_fringe <= 0){
       printf("Search could not produce goal state\n");
@@ -322,7 +362,7 @@ void mem_bound_A(disk arr[])
 
     /* remove best path node from fringe, assign to current - right now just removes head*/
     dequeue(current_node);
-
+    
     /* get return value from goal test, if so return that its reached the goal */
     goal_state = goal_test(current_node);
     if(goal_state){
@@ -349,6 +389,27 @@ void mem_bound_A(disk arr[])
 
 }
 
+
+int evaluate_cost(int current_index, node *current)
+{
+  /* function to evaluate the cose to the goal (g) and the heuristic value (h)
+     for a given node and its values */
+
+  /****** HEURISTIC *******/
+  /* get original n value from size_of_array */
+  int n = sqrt(size_of_array - 1);
+  /* base don index and small disk value, get heuristic value */
+  int heuristic_cost = (int)(current_index / n) + 1;
+  heuristic_cost = current->state[current_index] - heuristic_cost;
+ 
+  
+  /***** GOAl PATH COST *****/
+  int path_to_goal_cost = 0;
+
+
+
+  return heuristic_cost + path_to_goal_cost;
+}
 
 void heuristic(int input, disk arr[]){
   

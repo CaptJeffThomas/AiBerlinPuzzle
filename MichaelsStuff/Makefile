@@ -1,14 +1,14 @@
 
 SHELL=/bin/bash
 CC=gcc
-CFLAGS=-std=c99 -Wall -g
+CFLAGS=-std=c99 -Wall -g -D_POSIX_SOURCE
 
 
-setup: main.c func.o 
+AB: main.c func.o 
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 clean:
-	$(RM) -f *~ *# *.o setup
+	$(RM) -f *~ *# *.o AB
