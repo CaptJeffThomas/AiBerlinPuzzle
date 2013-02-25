@@ -19,8 +19,46 @@ int seed_val(){
   return (((time->tm_hour * 60) * 60) + (time->tm_min * 60) + time->tm_sec);
 }
 
+//disk position config based off users input
 void disk_setup(int n, disk arr[]){
 
+    char largeDisks[n*2 + 1];
+    char smallDisks[n*2 + 1];
+
+    //in any situation where input wasn't guaranteed we wouldn't use gets.  however we've been assured it is godly.
+    printf("Please enter the values of the large disks in clockwise order:  \n");
+    gets(largeDisks);
+    printf("\n");
+
+    printf("Please enter the values of the small disks in clockwise order (use 0 to represent the empty slot): \n");
+    gets(smallDisks);
+    printf("\n");
+
+
+    //fills our arr with large values provided from users string
+    char *diskValue = strtok (largeDisks," ");
+    int i = 0;
+    while (diskValue != NULL){
+	arr[i].lrg_val = atoi(diskValue);
+        diskValue = strtok (NULL, " ");
+        i++;
+    }
+
+   //fills our arr with small values provided from users string
+    diskValue = strtok (smallDisks," ");
+    i = 0;
+    while (diskValue != NULL){
+	arr[i].sml_val = atoi(diskValue);
+        diskValue = strtok (NULL, " ");
+        i++;
+    }
+
+}
+
+
+//our random disk position generator that automatically placed small and large disks.
+void random_Disk_setup(int n, disk arr[]){
+  
   // call function to produce random seed with each call
   int seed = seed_val();
   srand(seed);
@@ -38,7 +76,7 @@ void disk_setup(int n, disk arr[]){
   for(; index < ((n * n) + 1); index++){
 
     /* *** LARGE DISKS ***/
-    /* set random positon to palce the uncovered disk and n^2 + 1 value */
+    /* set random positon to place the uncovered disk and n^2 + 1 value */
     if(index == l_r){
       arr[index].lrg_val = n + 1;
     }
@@ -67,9 +105,11 @@ void disk_setup(int n, disk arr[]){
       }
     }
 
-  }
+  } 
+
   
 }
+
 
 /*** FUNCTIONS TO MAKE FRINGE (PRIOIRT QUEUE) ***/
 void enqueue(short int state[])
@@ -178,7 +218,7 @@ int goal_test(node *current)
 	return 0;
       }
     }
-    /* else state is a gal state so return 1 */
+    /* else state is a goal state so return 1 */
     return 1;
   }
   /* if last disk is uncovered, test to ensure values are in order */
@@ -295,7 +335,7 @@ void mem_bound_A(disk arr[])
   int goal_state;
 
   /* initialize closed/extended list */
-  int closed_idx = 0;
+  //int closed_idx = 0;
   disk closed[size_of_array];
   memset(closed,0,(size_of_array * sizeof(disk)));
 
