@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* maximum amount of memory allowable for search structures */
+#define MEMSIZE 1000000
+
 /* node structure for each disk (with corresponding large values) 
    representing states of the game */
 typedef struct d_node {
@@ -30,8 +33,12 @@ int size_of_array;
 node *fringe_tail;
 int size_of_fringe;
 
+/* function for usage message */
+void usage();
+
 /* functions to setup the board */
 int seed_val();
+void random_disk_setup(int input, disk arr[]);
 void disk_setup(int input, disk arr[]);
 
 /* functions for queue structure made from a_nodes */
@@ -48,6 +55,7 @@ void expand_node(int disk_val, int current_index, short int arr[]);
 void insert_all(node *current, disk arr[]);
 
 /* algorithm functions */
+int evaluate_cost(int current_index, node *current);
 int goal_test(node *current);
 void mem_bound_A(disk arr[]);
 
