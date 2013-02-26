@@ -20,3 +20,45 @@ heuristic: (int)(arraypos/n) + 1
 
        thus: 	  
 			 step: [2] 1 [1] 2 0 = [1] 1 [2] 2 0
+
+
+  int uncovered, count, val, n, x;
+
+  // calculate n value from size of disk array
+  n = sqrt(size_of_array - 1);
+
+  //iterate through small disk array, and find uncovered values index
+  for(x = 0; x < size_of_array; x++){
+    if(current->state[x] == 0){
+      uncovered = x;
+      break;
+    }
+  }
+  
+  //once uncovered index set, iterate through current 
+  //state array till encountering the uncovered index again
+  //*** use value to increment from 1 to n (ensuring temp array is in order) ***
+  val = 1;
+  for(x = uncovered + 1, count = 0; current->state[x] != 0; x++, count++){
+    //if count = n, incremtn value to the next value (ie 1112)
+    if(count == n){
+      val++;
+      count = 0;
+    }
+
+    //*** if index gets greater than the array size, loop back to the start
+    if(x >= size_of_array){
+      x = 0;
+    }
+    
+    /*** check that the current index value in the current->state array is the correct
+	 number by comparing it to value, if it is not then it is not a goal state so return ***/
+    if(current->state[x] != val){
+      return 0;
+    }
+
+  }
+
+  /* if array is ordered correctly, return 1 */
+  return 1;
+ 

@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "func.h"
-=======
 #define _POSIX_C_SOURCE 2 /* defined feature macro for getopt()*/
 #include<unistd.h>
 #include<stdlib.h>
@@ -11,9 +5,9 @@
 #include<string.h>
 #include<stdbool.h>
 #include"func.h"
->>>>>>> 1585b6eebba17572b983abf7979671b8ecdd767c
 
-bool flag = false;
+bool rand_flag = false;
+bool file_flag = false;
 
 int main(int argc, char *argv[])
 {
@@ -22,11 +16,15 @@ int main(int argc, char *argv[])
   /* use of getopt to determine whether to create random numbers
      for the disks or use the number specified and read disk values
      from a predeteremined file */
-  while((optn = getopt(argc,argv,"hr")) != -1){
+  while((optn = getopt(argc,argv,"hfr")) != -1){
     switch(optn){
     case 'r':
       /* given an r option, set flag to true */
-      flag = true;
+      rand_flag = true;
+      break;
+    case 'f':
+      /* given an f option, set file flag to true */
+      file_flag = true;
       break;
     case 'h':
     case '?':
@@ -38,20 +36,6 @@ int main(int argc, char *argv[])
   }
   
 
-<<<<<<< HEAD
-  /* read int from command line */
-  int n;
-  if(argv[1] != NULL){
-    n = atoi(argv[1]);
-  }  
-  /* initialize disk arrays */
-  size_of_array = (n * n) + 1;
-  disk disks[size_of_array];
-  memset(disks,0,(size_of_array * sizeof(disk)));
-  
-  /* populate arrays with disk setup using function */
-  disk_setup(n,disks);
-=======
   /* initialize disk arrays */
   disk disks[size_of_array];
   memset(disks,0,(size_of_array * sizeof(disk)));
@@ -59,7 +43,7 @@ int main(int argc, char *argv[])
 
   /* given an r option that sets the flag, use inputted numver as 'n' value 
   and set the size_of_array global */
-  if(flag){
+  if(rand_flag){
       if(argv[2] != NULL){
 	n = atoi(argv[2]);
 	size_of_array = (n * n) + 1;
@@ -72,27 +56,24 @@ int main(int argc, char *argv[])
       random_disk_setup(n,disks);
   }
   /* if command line given no options, use given value as n^2+1, read input.txt */
-  else{
+  else if(file_flag){
     /* default case, use given value as n^2+1, read input.txt */
-      if(argv[1] != NULL){
-	size_of_array = atoi(argv[1]);
+      if(argv[2] != NULL){
+	size_of_array = atoi(argv[2]);
       }
       else{
 	printf("ERROR: no 'n' inputted to generate random layout of disks\n");
 	exit(EXIT_FAILURE);
       }
       /* call function to define board layout */
-      disk_setup(size_of_array,disks);
+      fileDisk_setup(size_of_array,disks);
   }
-
->>>>>>> 1585b6eebba17572b983abf7979671b8ecdd767c
 
   printf(" --- Large Disks --- \n");
   int x;
   for(x = 0; x < size_of_array; x++){
     printf("%d ",disks[x].lrg_val);
   }
-<<<<<<< HEAD
   printf("\n\n");
 
   printf(" --- Small Disks --- \n");
@@ -102,7 +83,7 @@ int main(int argc, char *argv[])
   printf("\n \n \n");
 
   //heuristic(n, disks);
-=======
+
   printf("\n\n --- Initial State --- \n");
   for(x= 0; x < size_of_array; x++){
     printf("%d ",disks[x].sml_val);
@@ -110,7 +91,6 @@ int main(int argc, char *argv[])
   printf("\n\n");
 
   //heuristic(n,disks);
->>>>>>> 1585b6eebba17572b983abf7979671b8ecdd767c
 
   mem_bound_A(disks);
   

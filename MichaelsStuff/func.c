@@ -16,7 +16,45 @@ input.txt\n\n    Options:\n        -u    display usage message.\n        -r <num
 use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
 }
 
-void disk_setup(int input, disk arr[])
+//disk position config based off users input 
+void disk_setup(int n, disk arr[]){ 
+
+  char largeDisks[n*n + 1]; 
+  char smallDisks[n*n + 1]; 
+
+  //in any situation where input wasn't guaranteed we wouldn't use gets. however we've been assured it is godly.
+  //note that below it asks for clockwise order and this is arbitrary choice that would only be relevant to some1 
+  //with a physical puzzle.  Regardless it guarantees similar ordering for both small and large disks.
+  printf("Please enter the values of the large disks in clockwise order: \n"); 
+  gets(largeDisks); 
+  printf("\n"); 
+
+  printf("Please enter the values of the small disks in clockwise order (use 0 to represent the empty slot): \n"); 
+  gets(smallDisks); 
+  printf("\n"); 
+
+  //fills our arr with large disk values provided from users string 
+  char *diskValue = strtok (largeDisks," "); 
+  int i = 0; 
+  while (diskValue != NULL){ 
+    arr[i].lrg_val = atoi(diskValue); 
+    diskValue = strtok (NULL, " "); 
+    i++; 
+  } 
+
+  //fills our arr with small disk values provided from users string 
+  diskValue = strtok (smallDisks," "); 
+  i = 0; 
+  while (diskValue != NULL){ 
+    arr[i].sml_val = atoi(diskValue); 
+    diskValue = strtok (NULL, " "); 
+    i++; 
+  } 
+
+}
+
+
+void fileDisk_setup(int input, disk arr[])
 {
   /* function reads input from a file and puts values
      into disk array */
@@ -142,6 +180,7 @@ void enqueue(short int state[])
   else{
     new->parent = fringe_tail;
     fringe_tail = new;
+    new->f_val = new->parent->f_val + 1;
   }
 
   size_of_fringe++;
@@ -202,48 +241,46 @@ void clear_queue()
   temp = NULL;
 }
 
+
 int goal_test(node *current)
 {
-  /* function returns 1 if goal state reached, 0 if not */
-  
-  int x, count, val, n;
-  n = sqrt(size_of_array - 1); // n value from command line
-  val = 1; // used to check from 1 or 0 to n
-  /* if first disk is uncovered, test to ensure values are in order */
-  if(current->state[0] == 0){
-    /* check from 1 through to size */
-    for(x = 1, count = 0; x < size_of_array; x++, count++){
-      if(count == n){
-	val++;
-	count = 0;
-      }
-      if(current->state[x] != val){
-	return 0;
-      }
-    }
-    /* else state is a gal state so return 1 */
-    return 1;
-  }
-  /* if last disk is uncovered, test to ensure values are in order */
-  else if(current->state[size_of_array - 1] == 0){
-    /* check from 0 to size - 1*/
-    for(x = 0, count = 0; x < size_of_array - 1; x++, count ++){
-      if(count == n){
-	val++;
-	count = 0;
-      }
-      if(current->state[x] != val){
-	return 0;
-      }
-    }
-    /* else state is a goal state so return 1 */
-    return 1;
-  }
-  /* otherwise return failure */
-  else{
-    return 0;
-  }
+  int x, count, val, n; //x is a simple index of our current state, val is the value at index in a goal state we compare against, 
+  //count is the number of similar val's which = n, n the number of distinct small disks provided on commandline
 
+  n = sqrt(size_of_array - 1); // n value from command line
+  int start; //holds the index of the uncovered disk, i.e. state's 0 value
+
+  //find where our uncovered disk is
+  for(start=0; start < size_of_array; start++){
+    if(current->state[start] == 0){
+      break;
+    }
+  }
+  
+  //from our start index, scan the state to see if we have a goal state.
+  val = 1;
+  for(x = start + 1, count = 0; x < size_of_array; x++, count++){
+    if(count == n){
+      val++;
+      count = 0;
+    }
+    if(current->state[x] != val){
+      return 0;
+    }
+  }
+  /* We've scanned from the start (0-value) index to the end and everything is in order if we've arrived here.  Now we make sure everything from state[0] to state[start] is also in order. */
+  for(x=0; x < start; x++,count++){
+    if(count == n){
+      val++;
+      count = 0;
+    }
+    if(current->state[x] != val){
+      return 0;
+    }
+  }
+  
+  // Victory!  The ewoks dance tonight!  
+  return 1;
 }
 
 void swap(int new_index, int disk_val, int current_index, short int arr[])
@@ -307,7 +344,7 @@ void insert_all(node *current, disk arr[])
       break;
     }
   }
-
+  
   /* initialize temp short int array to used as base for swapping*/
   short int temp[size_of_array];
   for(int x = 0; x < size_of_array; x++){
@@ -353,7 +390,7 @@ void mem_bound_A(disk arr[])
   printf("Solution is: \n");
 
   int z = 0;
-  while( z < 30){
+  while( z < 1){
     /* check to see if fringe is empty, if so return failure */
     if(size_of_fringe <= 0){
       printf("Search could not produce goal state\n");
@@ -365,8 +402,9 @@ void mem_bound_A(disk arr[])
     
     /* get return value from goal test, if so return that its reached the goal */
     goal_state = goal_test(current_node);
-    if(goal_state){
-      printf("Goal!!!!: %d\n",goal_state);
+    printf("Goal State: %d\n",goal_state);
+    if(goal_state == 1){
+      printf("Goal!!!!\n");
       free(current_node);
       return;
     }
@@ -412,6 +450,9 @@ int evaluate_cost(int current_index, node *current)
 }
 
 void heuristic(int input, disk arr[]){
+
+
+  /*  SHOULDN'T THIS BE RETURNING A VALUE? */
   
   int finalVal;
   int size = (input * input) + 1;
