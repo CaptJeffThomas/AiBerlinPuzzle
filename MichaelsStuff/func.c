@@ -12,8 +12,7 @@ void usage()
   /* function produces usage message for user */
   printf(" AB program imposes a single Agent Search Method to complete a game.\n\n \
     NOTE: given no argumenta with a number to produce defined layout from \
-input.txt\n\n    Options:\n        -u    display usage message.\n        -r <number> \ 
-use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
+input.txt\n\n    Options:\n        -u    display usage message.\n        -r <number> use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
 }
 
 //disk position config based off users input 
@@ -83,7 +82,7 @@ void fileDisk_setup(int input, disk arr[])
     exit(EXIT_FAILURE);
   }
   for(int x = 0, y = 0; x < (input * 2); x += 2, y++){
-    arr[y].sml_val = atoi(line + x);
+      arr[y].sml_val = atoi(line + x);
   }
 
   fclose(fh); /* close file pointer */
@@ -176,6 +175,7 @@ void enqueue(short int state[])
   if(size_of_fringe == 0){
     new->parent = NULL;
     fringe_tail = new;
+    new->f_val = 0;         
   }
   else{
     new->parent = fringe_tail;
@@ -241,11 +241,10 @@ void clear_queue()
   temp = NULL;
 }
 
-
 int goal_test(node *current)
 {
-  int x, count, val, n; //x is a simple index of our current state, val is the value at index in a goal state we compare against, 
-  //count is the number of similar val's which = n, n the number of distinct small disks provided on commandline
+  
+  int x, count, val, n; //x is a simple index of our current state, val is the value at index in a goal state we compare against, count is the number of similar val's which = n, n the number of distinct small disks provided on commandline
 
   n = sqrt(size_of_array - 1); // n value from command line
   int start; //holds the index of the uncovered disk, i.e. state's 0 value
@@ -278,10 +277,11 @@ int goal_test(node *current)
       return 0;
     }
   }
-  
+ 
   // Victory!  The ewoks dance tonight!  
   return 1;
 }
+
 
 void swap(int new_index, int disk_val, int current_index, short int arr[])
 {
@@ -372,7 +372,7 @@ void mem_bound_A(disk arr[])
   int goal_state;
 
   /* initialize closed/extended list */
-  int closed_idx = 0;
+  //  int closed_idx = 0;
   disk closed[size_of_array];
   memset(closed,0,(size_of_array * sizeof(disk)));
 
@@ -390,7 +390,7 @@ void mem_bound_A(disk arr[])
   printf("Solution is: \n");
 
   int z = 0;
-  while( z < 1){
+  while( z < 10){
     /* check to see if fringe is empty, if so return failure */
     if(size_of_fringe <= 0){
       printf("Search could not produce goal state\n");
@@ -454,6 +454,9 @@ void heuristic(int input, disk arr[]){
 
   /*  SHOULDN'T THIS BE RETURNING A VALUE? */
   
+
+ /*  SHOULDN'T THIS BE RETURNING A VALUE? */
+
   int finalVal;
   int size = (input * input) + 1;
 
