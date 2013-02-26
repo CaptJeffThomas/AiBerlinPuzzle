@@ -173,16 +173,18 @@ void enqueue(short int state[])
   
   /* check head if added as head, or to end of queue */
   if(size_of_fringe == 0){
-    new->parent = NULL;
-    fringe_tail = new;
-    new->f_val = 0;         
+    new->next = NULL;
+    fringe_head = new;
+    new->g_val = 0;
+    //new->f_val = new->g_val + heuristic(new);
   }
   else{
-    new->parent = fringe_tail;
-    fringe_tail = new;
-    new->f_val = new->parent->f_val + 1;
+    fringe_head->next = new;
+    new->next = NULL;
+    new->g_val = new->next->g_val + 1;
+    //new->f_val = new->g_val + heuristic(new);
   }
-
+  printf("heuristic: %d\n",heuristic(new));
   size_of_fringe++;
 }
 
@@ -194,30 +196,28 @@ void copy_node(node *org, node *dest)
   for(int x = 0; x < size_of_array; x++){
     dest->state[x] = org->state[x];
   }
-
 }
-
 
 void dequeue(node *current)
 {
   /* function to remove node from start of queue */
-  node *del = fringe_tail;
+  node *temp = fringe_head;
   if(size_of_fringe == 1){
 
-    copy_node(del,current);
+    copy_node(temp,current);
 
-    free(del);
-    del = NULL;
-    fringe_tail = NULL;
+    free(temp);
+    temp = NULL;
+    fringe_head = NULL;
   }
   else if(size_of_fringe > 1){
-    for(; del->parent->parent != NULL; del = del->parent);
-
-    copy_node(del->parent,current);
-
-    /* reset start of the queue */
-    free(del->parent);
-    del->parent = NULL;
+    
+    fringe_head = temp->next;
+    
+    copy_node(temp,current);
+    
+    free(temp);
+    temp = NULL;
   }
   else{
     printf("ERROR: fringe is empty can't dequeue\n");
@@ -230,10 +230,10 @@ void dequeue(node *current)
 void clear_queue()
 {
   /* function runs through queue, deleting nodes */
-  node *del = fringe_tail; 
+  node *del = fringe_head; 
   node *temp = NULL;
   while(del != NULL){
-    temp = del->parent;
+    temp = del->next;
     free(del);
     del = temp;
   }
@@ -358,7 +358,6 @@ void insert_all(node *current, disk arr[])
 
 void mem_bound_A(disk arr[])
 {
-  int y;
   /* node used to reference head of fringe when dequeued */
   node *current_node = NULL;
   current_node = malloc(sizeof(node) + (size_of_array * sizeof(short int)));
@@ -367,7 +366,7 @@ void mem_bound_A(disk arr[])
     exit(EXIT_FAILURE);
   }
   memset(current_node,0,(sizeof(node) + (size_of_array * sizeof(short int))));
-
+  
   /* goal return value used for testing for goal state */
   int goal_state;
 
@@ -378,7 +377,7 @@ void mem_bound_A(disk arr[])
 
   /* initlialize fringe with one node (initial state of board) */
   size_of_fringe = 0;
-  fringe_tail = NULL;
+  fringe_head = NULL;
 
   short int temp[size_of_array];
   for(int x = 0; x < size_of_array; x++){
@@ -390,7 +389,7 @@ void mem_bound_A(disk arr[])
   printf("Solution is: \n");
 
   int z = 0;
-  while( z < 10){
+  while( z < 1){
     /* check to see if fringe is empty, if so return failure */
     if(size_of_fringe <= 0){
       printf("Search could not produce goal state\n");
@@ -402,21 +401,18 @@ void mem_bound_A(disk arr[])
     
     /* get return value from goal test, if so return that its reached the goal */
     goal_state = goal_test(current_node);
-    printf("Goal State: %d\n",goal_state);
     if(goal_state == 1){
       printf("Goal!!!!\n");
+      for(int y = 0; y < size_of_array; y++){
+	printf("%d ",current_node->state[y]);
+      }
+      printf("\n");
       free(current_node);
       return;
     }
     
     /* insert all possible states from current node into fringe */
     insert_all(current_node,arr);
-
-    for(y = 0; y < size_of_array; y++){
-      printf("%d ",current_node->state[y]);
-    }
-    printf("\n");
-    
 
     z++;
     //break;
@@ -428,49 +424,49 @@ void mem_bound_A(disk arr[])
 }
 
 
-int evaluate_cost(int current_index, node *current)
-{
-  /* function to evaluate the cose to the goal (g) and the heuristic value (h)
-     for a given node and its values */
-
-  /****** HEURISTIC *******/
-  /* get original n value from size_of_array */
-  int n = sqrt(size_of_array - 1);
-  /* base don index and small disk value, get heuristic value */
-  int heuristic_cost = (int)(current_index / n) + 1;
-  heuristic_cost = current->state[current_index] - heuristic_cost;
+//returns the number of elements adjacent to similar elements.  maximizing this value provides our best-first solution
+int heuristic(node *curr){
  
+  int grouped = 0; // number of similar elements grouped in the given stat
   
-  /***** GOAl PATH COST *****/
-  int path_to_goal_cost = 0;
-
-
-
-  return heuristic_cost + path_to_goal_cost;
-}
-
-void heuristic(int input, disk arr[]){
-
-
-  /*  SHOULDN'T THIS BE RETURNING A VALUE? */
-  
-
- /*  SHOULDN'T THIS BE RETURNING A VALUE? */
-
-  int finalVal;
-  int size = (input * input) + 1;
-
-  printf("Heuristics:\n");
-
-  for (int i=0; i<size; i++){
-    finalVal=(int)(i/input)+1;
-    finalVal=arr[i].sml_val-finalVal;
-    printf("arr[%d] = %d\n", i, finalVal);
+  //check if the first element is similar to the last
+  if(curr->state[size_of_array - 1] == curr->state[0]){
+    grouped+=2;
+    printf("simlar items on the edge of list %d \n", grouped);
   }
-  printf("\n");
+
+  //for loop checks the state from state[1] to state[end-1] for adjacent pairs
+  int full = 0;
+  for(int x = 0; x < size_of_array - 1; x++){
+    if(curr->state[x] == curr->state[x + 1]){
+      grouped++;
+      full++;
+      printf("next item is similar %d \n", grouped);
+    }
+    
+    if(  (curr->state[x] == 0) && (curr->state[x - 1] == 3) && (curr->state[x + 1] == 1) ) {
+      grouped++;
+      printf("3 0 1 in the middle of list %d \n", grouped);
+    }
+    printf("full: %d\n",full);
+    if(full == 2){
+      grouped++;
+      full = 0;
+      printf("full set of 3 together %d\n", grouped);
+    } 
+  }
+
+  //affirms the 0 lies between 3 and 1
+  if(  (curr->state[0] == 0) && (curr->state[size_of_array - 1] == 3) && (curr->state[1]) == 1 ) {
+      grouped++;
+
+    } 
+  if(  (curr->state[0] == 1) && (curr->state[size_of_array - 1] == 0) && (curr->state[size_of_array - 2] == 3) ) {
+      grouped++;
+
+    }  
+   
+  return grouped;
+
 }
-
-
-
-
 

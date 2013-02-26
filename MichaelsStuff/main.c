@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
   disk disks[size_of_array];
   memset(disks,0,(size_of_array * sizeof(disk)));
   size_of_array = atoi(argv[1]);
-  disk_setup(size_of_array, disks);
+  fileDisk_setup(size_of_array, disks);
 
   /* given an r option that sets the flag, use inputted numver as 'n' value 
   and set the size_of_array global 

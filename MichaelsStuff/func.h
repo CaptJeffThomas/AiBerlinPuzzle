@@ -20,8 +20,9 @@ typedef struct d_node {
 /* node structure for heap in our frontier queue */
 // NOTE: each structure takes up 18 bytes = 144 bits as a base with memory of (n * 4)
 typedef struct a_node {
-  short int f_val;
-  struct a_node *parent;
+  short int f_val; // sum of g() + h() calculated
+  short int g_val; // path cost up till now
+  struct a_node *next; //pointer to next node
   short int state[]; // lrg and sml disk value corresponding to moving to some state
 } node;
 
@@ -30,7 +31,7 @@ typedef struct a_node {
 int size_of_array;
 
 /* global fringe pointer and size variable used to dynamically build fringe */
-node *fringe_tail;
+node *fringe_head;
 int size_of_fringe;
 
 /* function for usage message */
@@ -47,7 +48,7 @@ void enqueue(short int state[]);
 void dequeue(node *current);
 void clear_queue();
 
-void heuristic(int input, disk arr[]);
+int heuristic(node *curr);
 
 /* functions for creating states and expanding current node */
 void copy_node(node *org, node *dest);
