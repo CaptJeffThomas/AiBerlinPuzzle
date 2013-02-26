@@ -39,12 +39,13 @@ int main(int argc, char *argv[])
   /* initialize disk arrays */
   disk disks[size_of_array];
   memset(disks,0,(size_of_array * sizeof(disk)));
-
+  size_of_array = atoi(argv[1]);
+  disk_setup(size_of_array, disks);
 
   /* given an r option that sets the flag, use inputted numver as 'n' value 
-  and set the size_of_array global */
+  and set the size_of_array global 
   if(rand_flag){
-      if(argv[2] != NULL){
+      if(argv[0] != NULL){
 	n = atoi(argv[2]);
 	size_of_array = (n * n) + 1;
       }
@@ -52,12 +53,12 @@ int main(int argc, char *argv[])
 	printf("ERROR: no 'n' inputted to generate random layout of disks\n");
 	exit(EXIT_FAILURE);
       }
-      /* call function to randomize board layout */
+      /* call function to randomize board layout
       random_disk_setup(n,disks);
   }
-  /* if command line given no options, use given value as n^2+1, read input.txt */
+  /* if command line given no options, use given value as n^2+1, read input.txt 
   else if(file_flag){
-    /* default case, use given value as n^2+1, read input.txt */
+    /* default case, use given value as n^2+1, read input.txt
       if(argv[2] != NULL){
 	size_of_array = atoi(argv[2]);
       }
@@ -65,9 +66,9 @@ int main(int argc, char *argv[])
 	printf("ERROR: no 'n' inputted to generate random layout of disks\n");
 	exit(EXIT_FAILURE);
       }
-      /* call function to define board layout */
+      /* call function to define board layout
       fileDisk_setup(size_of_array,disks);
-  }
+      } else {} */
 
   printf(" --- Large Disks --- \n");
   int x;
