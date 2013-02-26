@@ -1,17 +1,13 @@
-<<<<<<< HEAD
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "func.h"
-=======
+
 #define _POSIX_C_SOURCE 2 /* defined feature macro for getopt()*/
 #include<unistd.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
 #include<stdbool.h>
-#include"func.h"
->>>>>>> 1585b6eebba17572b983abf7979671b8ecdd767c
+
 
 bool flag = false;
 
@@ -38,9 +34,8 @@ int main(int argc, char *argv[])
   }
   
 
-<<<<<<< HEAD
+
   /* read int from command line */
-  int n;
   if(argv[1] != NULL){
     n = atoi(argv[1]);
   }  
@@ -51,9 +46,8 @@ int main(int argc, char *argv[])
   
   /* populate arrays with disk setup using function */
   disk_setup(n,disks);
-=======
+
   /* initialize disk arrays */
-  disk disks[size_of_array];
   memset(disks,0,(size_of_array * sizeof(disk)));
 
 
@@ -85,24 +79,24 @@ int main(int argc, char *argv[])
       disk_setup(size_of_array,disks);
   }
 
->>>>>>> 1585b6eebba17572b983abf7979671b8ecdd767c
+
 
   printf(" --- Large Disks --- \n");
   int x;
   for(x = 0; x < size_of_array; x++){
     printf("%d ",disks[x].lrg_val);
   }
-<<<<<<< HEAD
+
   printf("\n\n");
 
   printf(" --- Small Disks --- \n");
-  for(int x = 0; x < size_of_array; x++){
+  for(x = 0; x < size_of_array; x++){
     printf("%d ",disks[x].sml_val);
   }
   printf("\n \n \n");
 
   //heuristic(n, disks);
-=======
+
   printf("\n\n --- Initial State --- \n");
   for(x= 0; x < size_of_array; x++){
     printf("%d ",disks[x].sml_val);
@@ -110,7 +104,6 @@ int main(int argc, char *argv[])
   printf("\n\n");
 
   //heuristic(n,disks);
->>>>>>> 1585b6eebba17572b983abf7979671b8ecdd767c
 
   mem_bound_A(disks);
   

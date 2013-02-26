@@ -12,8 +12,7 @@ void usage()
   /* function produces usage message for user */
   printf(" AB program imposes a single Agent Search Method to complete a game.\n\n \
     NOTE: given no argumenta with a number to produce defined layout from \
-input.txt\n\n    Options:\n        -u    display usage message.\n        -r <number> \ 
-use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
+input.txt\n\n    Options:\n        -u    display usage message.\n        -r <number> use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
 }
 
 
@@ -83,7 +82,7 @@ void fileDisk_setup(int input, disk arr[])
     exit(EXIT_FAILURE);
   }
   for(int x = 0, y = 0; x < (input * 2); x += 2, y++){
-    arr[y].sml_val = atoi(line + x);
+      arr[y].sml_val = atoi(line + x);
   }
 
   fclose(fh); /* close file pointer */
@@ -376,7 +375,7 @@ void mem_bound_A(disk arr[])
   int goal_state;
 
   /* initialize closed/extended list */
-  int closed_idx = 0;
+  //  int closed_idx = 0;
   disk closed[size_of_array];
   memset(closed,0,(size_of_array * sizeof(disk)));
 
