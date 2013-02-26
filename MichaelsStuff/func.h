@@ -40,6 +40,7 @@ void usage();
 int seed_val();
 void random_disk_setup(int input, disk arr[]);
 void disk_setup(int input, disk arr[]);
+void fileDisk_setup(int input, disk arr[]);
 
 /* functions for queue structure made from a_nodes */
 void enqueue(short int state[]);

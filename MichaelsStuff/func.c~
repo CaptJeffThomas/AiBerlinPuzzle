@@ -454,9 +454,6 @@ int evaluate_cost(int current_index, node *current)
 
 void heuristic(int input, disk arr[]){
   
-
- /*  SHOULDN'T THIS BE RETURNING A VALUE? */
-
   int finalVal;
   int size = (input * input) + 1;
 
