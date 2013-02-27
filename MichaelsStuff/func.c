@@ -184,7 +184,6 @@ void enqueue(short int state[],short int path_cost)
     new->next = fringe_head;
     fringe_head = new;
     new->g_val = path_cost + 1;
-    //new->g_val = new->next->g_val + 1;
     new->f_val = new->g_val + heuristic(new->state);
   }
   
@@ -328,7 +327,6 @@ void expand_state(node *current, disk arr[])
 {
   /* function expands all possible states for a given state,
      and adds them to the fringe */
-  //NOTE: gval for all chldren states should be the same (current->g_val
 
   /* find uncovered large disk value and its index */
   int disk_val, current_index;
@@ -339,36 +337,47 @@ void expand_state(node *current, disk arr[])
     }
   }
   
+  /* calculate the number of possible states based on large value (just 2 if lrg.val = 1) */
+  int num_states;
+  if(disk_val == 1){
+    num_states = 2;
+  }
+  else{
+    num_states = 4;
+  }
+  
   //use temp short int array of arrays to calculate possible child states
-  short int child_states[4][size_of_array];
-
+  short int child_states[num_states][size_of_array];
   //initialize temp array with the current state values (all the same initially)
   int x, y;
-  for(x = 0; x < 4; x++){
+  for(x = 0; x < num_states; x++){
     for(y = 0; y < size_of_array; y++){
       child_states[x][y] = current->state[y];
     }
   }
 
   /* calculate all child states for the current state using swap function */
-  /* right n */
-  swap(current_index + disk_val,disk_val,current_index,child_states[0]);
-  /* left n */
-  swap(current_index - disk_val,disk_val,current_index,child_states[1]);
-  /* right 1 */
-  swap(current_index + 1,disk_val,current_index,child_states[2]);
-  /* left 1 */
-  swap(current_index - 1,disk_val,current_index,child_states[3]);
+  /* ensure duplicate states are not added if large disk value is 1 */
+  if(disk_val == 1 && num_states == 2){
+      swap(current_index + 1,disk_val,current_index,child_states[0]); /* right 1*/
+      swap(current_index - 1,disk_val,current_index,child_states[1]); /* left 1*/
+  }
+  else if(num_states == 4){
+    swap(current_index + disk_val,disk_val,current_index,child_states[0]); /* right n*/
+    swap(current_index - disk_val,disk_val,current_index,child_states[1]); /* left n */
+    swap(current_index + 1,disk_val,current_index,child_states[2]); /* right 1*/
+    swap(current_index - 1,disk_val,current_index,child_states[3]); /* left 1*/
+  }
 
   /* calculate f values for each child for the current state */
-  int child_f_vals[4];
-  for(x = 0; x < 4; x++){
+  int child_f_vals[num_states];
+  for(x = 0; x < num_states; x++){
     child_f_vals[x] = (current->g_val + 1) + heuristic(child_states[x]);
     printf("f value for child %d: %d\n",x,heuristic(child_states[x]));
   }
 
   printf("child states\n");
-  for(x = 0; x < 4; x++){
+  for(x = 0; x < num_states; x++){
     for(y = 0; y < size_of_array; y++){
       printf("%d ",child_states[x][y]);
     }
@@ -380,12 +389,12 @@ void expand_state(node *current, disk arr[])
      to the enqueue (-1 designates alreayd been added), ensures all states added once */
   /* NOTE: states witht eh same f_val are added in order as they are processed */
   int index = 0, min;
-  for(x = 0; x < 4; x++){
+  for(x = 0; x < num_states; x++){
     index = x;
     min = child_f_vals[x];
     /* if min == -1, reset min and index by finding first non -1 value */
     if(min == -1){
-      for(y = 0; y < 4; y++){
+      for(y = 0; y < num_states; y++){
 	if(child_f_vals[y] != -1){
 	  min = child_f_vals[y];
 	  index = y;
@@ -393,7 +402,7 @@ void expand_state(node *current, disk arr[])
       }
     }
     /* loop through child_vals, evaluateing to get the least f_val */
-    for(y = 0; y < 4; y++){
+    for(y = 0; y < num_states; y++){
       if(child_f_vals[y] < min && child_f_vals[y] != -1){
 	min = child_f_vals[y];
 	index = y;
@@ -495,7 +504,8 @@ void mem_bound_A(disk arr[])
 //maximizing this value provides our best-first solution
 int heuristic(short int curr_state[]){
 
- int grouped = size_of_array; // number of similar elements grouped in the given stat
+ int grouped = size_of_array; 
+ // number of similar elements grouped in the given stat
  //check if the first element is similar to the last
  if(curr_state[size_of_array - 1] == curr_state[0]){
     grouped -= 2;
