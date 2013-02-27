@@ -1,7 +1,6 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
-#include<time.h>
 #include<math.h>
 #include"func.h"
 
@@ -12,7 +11,9 @@ void usage()
   /* function produces usage message for user */
   printf(" AB program imposes a single Agent Search Method to complete a game.\n\n \
     NOTE: given no argumenta with a number to produce defined layout from \
-input.txt\n\n    Options:\n        -u    display usage message.\n        -r <number> use number as n value to produce random board layout\n    Example:\n         ./AB 10\n");
+input.txt\n\n    Options:\n        -u    display usage message.\n \
+        -r <number> use number as n value to produce random board layout\n \
+    Example:\n         ./AB 10\n");
 }
 
 //disk position config based off users input 
@@ -88,24 +89,10 @@ void fileDisk_setup(int input, disk arr[])
   fclose(fh); /* close file pointer */
 }
 
-
-int seed_val(){
-  /* function returns seed value based on current
-     time in seconds */
-  time_t current = time(0);
-  struct tm *time = localtime(&current);
-  if(time == NULL){
-    printf("error extracting local time\n");
-    exit(EXIT_FAILURE);
-  }
-  return (((time->tm_hour * 60) * 60) + (time->tm_min * 60) + time->tm_sec);
-}
-
 void random_disk_setup(int n, disk arr[]){
 
-  // call function to produce random seed with each call
-  int seed = seed_val();
-  srand(seed);
+  // produce random seed with each call
+  srand(0);
 
   // get random values for small and large disk n position
   short int l_r = (int)((double)rand() / ((double)RAND_MAX + 1) * ((n * n) + 1));
@@ -154,7 +141,7 @@ void random_disk_setup(int n, disk arr[]){
 }
 
 /*** FUNCTIONS TO MAKE FRINGE (PRIOIRT QUEUE) ***/
-void enqueue(short int state[])
+void enqueue(short int state[],short int path_cost)
 {
   /* function to add node at the back of the queue */
   node *new = NULL;
@@ -176,15 +163,16 @@ void enqueue(short int state[])
     new->next = NULL;
     fringe_head = new;
     new->g_val = 0;
-    //new->f_val = new->g_val + heuristic(new);
+    new->f_val = new->g_val + heuristic(new->state);
   }
   else{
-    fringe_head->next = new;
-    new->next = NULL;
-    new->g_val = new->next->g_val + 1;
-    //new->f_val = new->g_val + heuristic(new);
+    new->next = fringe_head;
+    fringe_head = new;
+    new->g_val = path_cost + 1;
+    //new->g_val = new->next->g_val + 1;
+    new->f_val = new->g_val + heuristic(new->state);
   }
-  printf("heuristic: %d\n",heuristic(new));
+  
   size_of_fringe++;
 }
 
@@ -193,6 +181,7 @@ void copy_node(node *org, node *dest)
 {
   /* copy values of one node to another */
   dest->f_val = org->f_val;
+  dest->g_val = org->g_val;
   for(int x = 0; x < size_of_array; x++){
     dest->state[x] = org->state[x];
   }
@@ -232,7 +221,14 @@ void clear_queue()
   /* function runs through queue, deleting nodes */
   node *del = fringe_head; 
   node *temp = NULL;
+  printf("added states to the fringe\nNOTE: prints nodes backwards cause of stack\n");
   while(del != NULL){
+    int y;
+    for(y = 0; y < size_of_array; y++){
+      printf("%d ",del->state[y]);
+    }
+    printf("\n");
+
     temp = del->next;
     free(del);
     del = temp;
@@ -244,7 +240,9 @@ void clear_queue()
 int goal_test(node *current)
 {
   
-  int x, count, val, n; //x is a simple index of our current state, val is the value at index in a goal state we compare against, count is the number of similar val's which = n, n the number of distinct small disks provided on commandline
+  int x, count, val, n; 
+  //x is a simple index of our current state, val is the value at index in a goal state we compare against, 
+  //count is the number of similar val's which = n, n the number of distinct small disks provided on commandline
 
   n = sqrt(size_of_array - 1); // n value from command line
   int start; //holds the index of the uncovered disk, i.e. state's 0 value
@@ -267,7 +265,9 @@ int goal_test(node *current)
       return 0;
     }
   }
-  /* We've scanned from the start (0-value) index to the end and everything is in order if we've arrived here.  Now we make sure everything from state[0] to state[start] is also in order. */
+  /* We've scanned from the start (0-value) index to the end and everything 
+  is in order if we've arrived here.  Now we make sure everything from state[0] 
+  to state[start] is also in order. */
   for(x=0; x < start; x++,count++){
     if(count == n){
       val++;
@@ -299,61 +299,86 @@ void swap(int new_index, int disk_val, int current_index, short int arr[])
   arr[current_index] = temp; // some value
 }
 
-void expand_node(int disk_val, int current_index, short int state[])
-{
-  /*** right now, function just picks random option between the 4 possible
-       next states from the current state to add to the queue ***/
-  int seed = seed_val();
-  srand(seed);
-
-  int rstate = (int)((double)rand() / ((double)RAND_MAX + 1) * 4);
-  switch(rstate){
-  case 0:
-	/* right n */
-	swap(current_index + disk_val,disk_val,current_index,state);
-	break;
-  case 1:
-	/* left n */
-	swap(current_index - disk_val,disk_val,current_index,state);
-	break;
-  case 2:
-	/* right 1 */
-	swap(current_index + 1,disk_val,current_index,state);
-	break;
-  case 3:
-	/* left 1 */
-	swap(current_index - 1,disk_val,current_index,state);
-  }
-
-  /* add random next state to fringe */
-  enqueue(state);
-  
-}
-
-
-void insert_all(node *current, disk arr[])
+void expand_state(node *current, disk arr[])
 {
   /* function expands all possible states for a given state,
      and adds them to the fringe */
+  //NOTE: gval for all chldren states should be the same (current->g_val
 
   /* find uncovered large disk value and its index */
-  int disk_val, index;
-  for(index = 0; index < size_of_array; index++){
-    if(current->state[index] == 0){
-      disk_val = arr[index].lrg_val;
+  int disk_val, current_index;
+  for(current_index = 0; current_index < size_of_array; current_index++){
+    if(current->state[current_index] == 0){
+      disk_val = arr[current_index].lrg_val;
       break;
     }
   }
   
-  /* initialize temp short int array to used as base for swapping*/
-  short int temp[size_of_array];
-  for(int x = 0; x < size_of_array; x++){
-    temp[x] = current->state[x];
+  //use temp short int array of arrays to calculate possible child states
+  short int child_states[4][size_of_array];
+
+  //initialize temp array with the current state values (all the same initially)
+  int x, y;
+  for(x = 0; x < 4; x++){
+    for(y = 0; y < size_of_array; y++){
+      child_states[x][y] = current->state[y];
+    }
+  }
+
+  /* calculate all child states for the current state using swap function */
+  /* right n */
+  swap(current_index + disk_val,disk_val,current_index,child_states[0]);
+  /* left n */
+  swap(current_index - disk_val,disk_val,current_index,child_states[1]);
+  /* right 1 */
+  swap(current_index + 1,disk_val,current_index,child_states[2]);
+  /* left 1 */
+  swap(current_index - 1,disk_val,current_index,child_states[3]);
+
+  /* calculate f values for each child for the current state */
+  int child_f_vals[4];
+  for(x = 0; x < 4; x++){
+    child_f_vals[x] = (current->g_val + 1) + heuristic(child_states[x]);
+    printf("f value for child %d: %d\n",x,heuristic(child_states[x]));
+  }
+
+  printf("child states\n");
+  for(x = 0; x < 4; x++){
+    for(y = 0; y < size_of_array; y++){
+      printf("%d ",child_states[x][y]);
+    }
+    printf("\n");
+  }
+
+  
+  /* loop through child_f_vals, determining which is the least, and add that
+     to the enqueue (-1 designates alreayd been added), ensures all states added once */
+  /* NOTE: states witht eh same f_val are added in order as they are processed */
+  int index = 0, min;
+  for(x = 0; x < 4; x++){
+    index = x;
+    min = child_f_vals[x];
+    /* if min == -1, reset min and index by finding first non -1 value */
+    if(min == -1){
+      for(y = 0; y < 4; y++){
+	if(child_f_vals[y] != -1){
+	  min = child_f_vals[y];
+	  index = y;
+	}
+      }
+    }
+    /* loop through child_vals, evaluateing to get the least f_val */
+    for(y = 0; y < 4; y++){
+      if(child_f_vals[y] < min && child_f_vals[y] != -1){
+	min = child_f_vals[y];
+	index = y;
+      }
+    }
+    /* add least f_val child to the fringe, set that childs index to -1 */
+    enqueue(child_states[index],current->g_val);
+    child_f_vals[index] = -1;
   }
   
-  /* go through each 4 (or 2) possible states to add to the fringe */
-  expand_node(disk_val,index,temp);
-
 }
 
 void mem_bound_A(disk arr[])
@@ -383,8 +408,9 @@ void mem_bound_A(disk arr[])
   for(int x = 0; x < size_of_array; x++){
     temp[x] = arr[x].sml_val;
   }
-  /* enqueue first node into fringe (initial state of small disks) */
-  enqueue(temp);
+  /* enqueue first node into fringe (initial state of small disks) 
+   NOTE: path_cost argument doesnt matter for the first node, so pass 0*/
+  enqueue(temp,0);
 
   printf("Solution is: \n");
 
@@ -399,23 +425,24 @@ void mem_bound_A(disk arr[])
     /* remove best path node from fringe, assign to current - right now just removes head*/
     dequeue(current_node);
     
+    for(int y = 0; y < size_of_array; y++){
+	printf("%d ",current_node->state[y]);
+    }
+    printf("\n");
+
     /* get return value from goal test, if so return that its reached the goal */
     goal_state = goal_test(current_node);
     if(goal_state == 1){
       printf("Goal!!!!\n");
-      for(int y = 0; y < size_of_array; y++){
-	printf("%d ",current_node->state[y]);
-      }
-      printf("\n");
+      printf("Heuristic of goal: %d\n",heuristic(current_node->state));
       free(current_node);
       return;
     }
     
     /* insert all possible states from current node into fringe */
-    insert_all(current_node,arr);
+    expand_state(current_node,arr);
 
     z++;
-    //break;
   }
 
   /* free memory used for node assignment in SMA function */
@@ -424,49 +451,47 @@ void mem_bound_A(disk arr[])
 }
 
 
-//returns the number of elements adjacent to similar elements.  maximizing this value provides our best-first solution
-int heuristic(node *curr){
- 
-  int grouped = 0; // number of similar elements grouped in the given stat
-  
-  //check if the first element is similar to the last
-  if(curr->state[size_of_array - 1] == curr->state[0]){
-    grouped+=2;
-    printf("simlar items on the edge of list %d \n", grouped);
-  }
+//returns the number of elements adjacent to similar elements.  
+//maximizing this value provides our best-first solution
+int heuristic(short int curr_state[]){
 
-  //for loop checks the state from state[1] to state[end-1] for adjacent pairs
-  int full = 0;
-  for(int x = 0; x < size_of_array - 1; x++){
-    if(curr->state[x] == curr->state[x + 1]){
-      grouped++;
-      full++;
-      printf("next item is similar %d \n", grouped);
-    }
-    
-    if(  (curr->state[x] == 0) && (curr->state[x - 1] == 3) && (curr->state[x + 1] == 1) ) {
-      grouped++;
-      printf("3 0 1 in the middle of list %d \n", grouped);
-    }
-    printf("full: %d\n",full);
-    if(full == 2){
-      grouped++;
-      full = 0;
-      printf("full set of 3 together %d\n", grouped);
-    } 
-  }
+ int grouped = size_of_array; // number of similar elements grouped in the given stat
+ //check if the first element is similar to the last
+ if(curr_state[size_of_array - 1] == curr_state[0]){
+    grouped -= 2;
+    //printf("simlar items on the edge of list %d \n", grouped);
+ }
 
-  //affirms the 0 lies between 3 and 1
-  if(  (curr->state[0] == 0) && (curr->state[size_of_array - 1] == 3) && (curr->state[1]) == 1 ) {
-      grouped++;
+ //for loop checks the state from state[1] to state[end-1] for adjacent pairs
+ int full = 0;
+ for(int x = 0; x < size_of_array - 1; x++){
+   if(curr_state[x] == curr_state[x + 1]){
+     grouped--;
+     full++;
+     //printf("next item is similar %d \n", grouped);
+ }
 
-    } 
-  if(  (curr->state[0] == 1) && (curr->state[size_of_array - 1] == 0) && (curr->state[size_of_array - 2] == 3) ) {
-      grouped++;
+ if(  (curr_state[x] == 0) && (curr_state[x - 1] == 3) && (curr_state[x + 1] == 1) ) {
+  grouped--;
+  //printf("3 0 1 in the middle of list %d \n", grouped);
+ }
+ //printf("full: %d\n",full);
+ if(full == 2){
+   grouped--;
+   full = 0;
+   //printf("full set of 3 together %d\n", grouped);
+   } 
+ }
 
-    }  
-   
-  return grouped;
+ //affirms the 0 lies between 3 and 1
+ if(  (curr_state[0] == 0) && (curr_state[size_of_array - 1] == 3) && (curr_state[1]) == 1 ) {
+   grouped--;
+ }
+ if(  (curr_state[0] == 1) && (curr_state[size_of_array - 1] == 0) && (curr_state[size_of_array - 2] == 3) ) {
+   grouped--;
+ }
+
+ return grouped;
 
 }
 

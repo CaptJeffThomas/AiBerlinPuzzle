@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 /* maximum amount of memory allowable for search structures */
 #define MEMSIZE 1000000
@@ -18,7 +19,7 @@ typedef struct d_node {
 } disk;
 
 /* node structure for heap in our frontier queue */
-// NOTE: each structure takes up 18 bytes = 144 bits as a base with memory of (n * 4)
+// NOTE: each structure takes up 19 bytes = 152 bits as a base with memory of (n * 4)
 typedef struct a_node {
   short int f_val; // sum of g() + h() calculated
   short int g_val; // path cost up till now
@@ -38,23 +39,21 @@ int size_of_fringe;
 void usage();
 
 /* functions to setup the board */
-int seed_val();
 void random_disk_setup(int input, disk arr[]);
 void disk_setup(int input, disk arr[]);
 void fileDisk_setup(int input, disk arr[]);
 
 /* functions for queue structure made from a_nodes */
-void enqueue(short int state[]);
+void enqueue(short int state[], short int path_cost);
 void dequeue(node *current);
 void clear_queue();
 
-int heuristic(node *curr);
+int heuristic(short int curr_state[]);
 
 /* functions for creating states and expanding current node */
 void copy_node(node *org, node *dest);
 void swap(int new_index, int disk_val, int current_index, short int arr[]);
-void expand_node(int disk_val, int current_index, short int arr[]);
-void insert_all(node *current, disk arr[]);
+void expand_state(node *current,disk arr[]);
 
 /* algorithm functions */
 int evaluate_cost(int current_index, node *current);
