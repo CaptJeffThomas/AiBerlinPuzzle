@@ -35,6 +35,10 @@ int size_of_array;
 node *fringe_head;
 int size_of_fringe;
 
+/* global variable to track memory usage and associated function for checking mem usage */
+int curr_mem;
+void check_mem_usage();
+
 /* function for usage message */
 void usage();
 

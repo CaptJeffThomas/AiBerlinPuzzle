@@ -35,9 +35,14 @@ int main(int argc, char *argv[])
     }
   }
   
+  /* initialize curr_mem */
+  curr_mem = 0;
 
   /* initialize disk arrays */
   disk disks[size_of_array];
+  curr_mem += sizeof(disks);
+  check_mem_usage();
+
   memset(disks,0,(size_of_array * sizeof(disk)));
   size_of_array = atoi(argv[1]);
   fileDisk_setup(size_of_array, disks);

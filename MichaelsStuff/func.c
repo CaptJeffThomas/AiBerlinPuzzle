@@ -16,6 +16,15 @@ input.txt\n\n    Options:\n        -u    display usage message.\n \
     Example:\n         ./AB 10\n");
 }
 
+/* ensuring we are within the memory usage constraints */
+void check_mem_usage(){
+  printf("current memory usage is: %d/%d\n", curr_mem, MEMSIZE);
+  if (curr_mem > MEMSIZE){
+    printf("Ran out of memory :(\n\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
 //disk position config based off users input 
 void disk_setup(int n, disk arr[]){ 
 
@@ -146,10 +155,16 @@ void enqueue(short int state[],short int path_cost)
   /* function to add node at the back of the queue */
   node *new = NULL;
   new = malloc(sizeof(node) + (size_of_array * sizeof(short int)));
+  
   if(new == NULL){
     printf("ERROR: malloc failed \n");
     exit(EXIT_FAILURE);
   }
+
+  /* check mem usage */
+  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int)));
+  check_mem_usage();
+
   memset(new,0,(sizeof(node) + (size_of_array * sizeof(short int))));
 
   /* run through inputted state and assign 
@@ -195,6 +210,9 @@ void dequeue(node *current)
 
     copy_node(temp,current);
 
+    /* reduce mem usage */
+    curr_mem -= sizeof(temp);
+
     free(temp);
     temp = NULL;
     fringe_head = NULL;
@@ -205,6 +223,9 @@ void dequeue(node *current)
     
     copy_node(temp,current);
     
+    /* reduce mem usage */
+    curr_mem -= sizeof(temp);
+
     free(temp);
     temp = NULL;
   }
@@ -230,6 +251,10 @@ void clear_queue()
     printf("\n");
 
     temp = del->next;
+
+    /* reduce mem usage */
+    curr_mem -= sizeof(del);
+
     free(del);
     del = temp;
   }
@@ -390,6 +415,11 @@ void mem_bound_A(disk arr[])
     printf("ERROR: malloc failed \n");
     exit(EXIT_FAILURE);
   }
+
+  /* add to and check mem usage */
+  curr_mem += sizeof(current_node);
+  check_mem_usage();
+
   memset(current_node,0,(sizeof(node) + (size_of_array * sizeof(short int))));
   
   /* goal return value used for testing for goal state */
@@ -399,6 +429,10 @@ void mem_bound_A(disk arr[])
   //  int closed_idx = 0;
   disk closed[size_of_array];
   memset(closed,0,(size_of_array * sizeof(disk)));
+
+  /* add to and check mem usage */
+  curr_mem += sizeof(closed);
+  check_mem_usage();
 
   /* initlialize fringe with one node (initial state of board) */
   size_of_fringe = 0;
@@ -435,6 +469,10 @@ void mem_bound_A(disk arr[])
     if(goal_state == 1){
       printf("Goal!!!!\n");
       printf("Heuristic of goal: %d\n",heuristic(current_node->state));
+      
+      /* reduce mem usage */
+      curr_mem -= sizeof(current_node);
+
       free(current_node);
       return;
     }
@@ -446,6 +484,8 @@ void mem_bound_A(disk arr[])
   }
 
   /* free memory used for node assignment in SMA function */
+  /* reduce mem usage */
+  curr_mem -= sizeof(current_node);
   free(current_node);
 
 }
