@@ -153,8 +153,8 @@ void random_disk_setup(int n, disk arr[]){
 
 
 /*** FUNCTIONS TO MAKE FRINGE (PRIOIRT QUEUE) ***/
-void enqueue(short int newState[],short int path_cost)
-{
+void enqueue(short int newState[],short int path_cost){
+
   /* function to add node at the back of the queue */
   node *new = NULL;
   new = malloc(sizeof(node) + (size_of_array * sizeof(short int)));
@@ -165,7 +165,7 @@ void enqueue(short int newState[],short int path_cost)
   }
 
   /* check mem usage */
-  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int)));
+  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
   check_mem_usage();
 
   memset(new,0,(sizeof(node) + (size_of_array * sizeof(short int))));
@@ -178,6 +178,7 @@ void enqueue(short int newState[],short int path_cost)
   for(int x = 0; x < size_of_array; x++){
       new->state[x] = newState[x];
       printf(" %d", new->state[x]);
+  }
  
 
   HASH_FIND_INT(closedList, &newState, tmp); //search the closed list to see if this state exists
@@ -238,7 +239,7 @@ void dequeue(node *current)
     copy_node(temp,current);
 
     /* reduce mem usage */
-    curr_mem -= sizeof(temp);
+    curr_mem -= sizeof(temp) * 8;
 
     free(temp);
     temp = NULL;
@@ -251,7 +252,7 @@ void dequeue(node *current)
     copy_node(temp,current);
     
     /* reduce mem usage */
-    curr_mem -= sizeof(temp);
+    curr_mem -= sizeof(temp) * 8;
 
     free(temp);
     temp = NULL;
@@ -280,7 +281,7 @@ void clear_queue()
     temp = del->next;
 
     /* reduce mem usage */
-    curr_mem -= sizeof(del);
+    curr_mem -= sizeof(del) * 8;
 
     free(del);
     del = temp;
@@ -568,6 +569,7 @@ int heuristic(short int curr_state[]){
  if(  (curr_state[0] == 1) && (curr_state[size_of_array - 1] == 0) && (curr_state[size_of_array - 2] == 3) ) {
    grouped--;
  }
+
 
  return grouped;
 

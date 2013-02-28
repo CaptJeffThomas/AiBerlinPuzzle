@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
   /* initialize disk arrays */
   disk disks[size_of_array];
-  curr_mem += sizeof(disks);
+  curr_mem += sizeof(disks) * 8;
   check_mem_usage();
 
   memset(disks,0,(size_of_array * sizeof(disk)));
