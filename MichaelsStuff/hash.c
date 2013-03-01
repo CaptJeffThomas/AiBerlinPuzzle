@@ -13,6 +13,7 @@ hash_head * init_hash(int size){
   hash_head * temp = closed_list;
 
   for (int i = 1; i<size ; i++){
+    temp->head=NULL;
     temp->next = malloc(sizeof(hash_head));
     temp = temp->next;
   }
@@ -38,8 +39,8 @@ void insert_to_hash(hash_head * map, node * ptr){
     place--;
   }
 
-  if (hashTemp==NULL){
-    hashTemp = malloc(sizeof(node));
+  if (hashTemp->head==NULL){
+    hashTemp->head = malloc(sizeof(node));
     copy_node(ptr, hashTemp->head);
   } else {
     temp = hashTemp->head;
