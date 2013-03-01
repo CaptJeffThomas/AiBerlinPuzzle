@@ -69,6 +69,6 @@ int goal_test(node *current);
 void mem_bound_A(disk arr[]);
 
 /* printing lists */
-void print_List(node * head);
+void print_list();
 
 #endif /* _AB_GAME_H_  */

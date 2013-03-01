@@ -21,7 +21,6 @@ hash_head *closed_list;
 hash_head * init_hash(int size);
 int hash(node * ptr);
 void insert_to_hash(hash_head * map, node * ptr);
-void remove_from_hash(hash_head * map, node * ptr);
 int hash_contains(hash_head * map, node * ptr);
 
 #endif /* _HASH_H_ */

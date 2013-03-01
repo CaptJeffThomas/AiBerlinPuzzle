@@ -22,8 +22,8 @@ input.txt\n\n    Options:\n        -u    display usage message.\n \
 void check_mem_usage(){
   printf("current memory usage is: %d/%d\n", curr_mem, MEMSIZE);
   if (curr_mem > MEMSIZE){
-    printf("Ran out of memory :(\n\n");
-    exit(EXIT_FAILURE);
+    printf("Ran out of memory ... pruning :(\n\n");
+    prune();
   }
 }
 
@@ -220,7 +220,7 @@ void dequeue(node *current)
     /* reduce mem usage */
     curr_mem -= sizeof(node) * 8;
 
-    //free(temp);
+    free(temp);
     temp = NULL;
     fringe_head = NULL;
   }
@@ -233,7 +233,7 @@ void dequeue(node *current)
     /* reduce mem usage */
     curr_mem -= sizeof(node) * 8;
 
-    //free(temp);
+    free(temp);
     temp = NULL;
   }
   else{
@@ -444,7 +444,7 @@ void mem_bound_A(disk arr[])
   int goal_state;
 
   /* initialize closed/extended list(hash map) */
-  closed_list = init_hash(size_of_array);
+  //closed_list = init_hash(size_of_array);
 
   /* initlialize fringe with one node (initial state of board) */
   size_of_fringe = 0;
@@ -490,21 +490,21 @@ void mem_bound_A(disk arr[])
     }
     
     /* check the closed list to see if the current state is in it */
-    int check = hash_contains(closed_list,current_node);
-    if(check == 1){
+    //int check = hash_contains(closed_list,current_node);
+    //if(check == 1){
       /* if closed list doesnt contain a node, add it to the closed
 	 list and expand */
-      insert_to_hash(closed_list,current_node);
+      //insert_to_hash(closed_list,current_node);
 
-      printf("added: ");
-      for(int x = 0; x < size_of_array; x++){
-	printf("%d ",current_node->state[x]);
-      }
-      printf("to the closed list !\n");
+      //printf("added: ");
+      //for(int x = 0; x < size_of_array; x++){
+    //printf("%d ",current_node->state[x]);
+    //}
+    //printf("to the closed list !\n");
       
       /* insert all possible states from current node into fringe */
       expand_state(current_node,arr);
-    }
+      //}
 
     //z++;
   }
@@ -584,13 +584,20 @@ void prune(){
   }
 }
 
-void print_list(node * head){
-  node * temp = head;
-  while(temp!=NULL){
-    for (int i = 0; i<size_of_array; i++){
-      printf(" %d", temp->state[i]);
+void print_list(){
+  
+  hash_head * hashTemp = closed_list;
+
+  node * temp;
+  while (hashTemp != NULL){
+    temp = hashTemp->head;
+    while(temp!=NULL){
+      for (int i = 0; i<size_of_array; i++){
+	printf("%d ", temp->state[i]);
+      }
+      printf("\n");
+      temp=temp->next;
     }
-    printf("\n");
-    temp=temp->next;
+    hashTemp = hashTemp->next;
   }
 }

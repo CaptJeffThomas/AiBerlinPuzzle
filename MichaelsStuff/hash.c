@@ -12,7 +12,7 @@ hash_head * init_hash(int size){
   closed_list = malloc(sizeof(hash_head));
   hash_head * temp = closed_list;
 
-  for (int i = 1; i<size ; i++){
+  for (int i = 1; i<size-1; i++){
     temp->head=NULL;
     temp->next = malloc(sizeof(hash_head));
     temp = temp->next;
@@ -40,65 +40,19 @@ void insert_to_hash(hash_head * map, node * ptr){
   }
 
   if (hashTemp->head==NULL){
-    hashTemp->head = malloc(sizeof(node));
+    hashTemp->head = malloc(sizeof(node) + (size_of_array * sizeof(short int)));
     copy_node(ptr, hashTemp->head);
   } else {
     temp = hashTemp->head;
     while(temp->next!=NULL){
       temp=temp->next;
     }
-    temp->next = malloc(sizeof(node));
+    temp->next = malloc(sizeof(node) + (size_of_array * sizeof(short int)));
     copy_node(ptr, temp);
   }
   
-  curr_mem += sizeof(node) * 8;
+  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int)))* 8;
   check_mem_usage();
-}
-
-/* remove element from the hash */
-void remove_from_hash(hash_head * map, node * ptr){
-  int place = hash(ptr);
-  node * prev = NULL;
-  node * temp = NULL;
-  hash_head * hashTemp = NULL;
-  int same_state = 0;
-
-  hashTemp = map;
-
-  while(place!=0){
-    hashTemp = hashTemp->next;
-    place--;
-  }
-
-  temp = hashTemp->head;
-  if (temp==NULL){
-    return;
-  } else {
-    while (temp->next!=NULL){
-      
-      /* check the two states. same_state will be 0 if they are the same, non 0 otherwise */
-      for (int i=0; i<size_of_array; i++){
-	if (ptr->state[i]!=temp->state[i]) same_state++;
-      }
-
-      /* remove element if it is what we are looking for */
-      if(same_state==0){
-	if(prev==NULL){
-	  hashTemp->head = temp->next;
-	} else {
-	  prev->next = temp->next;
-	}
-	curr_mem -= sizeof(node) * 8;
-	free(temp);
-	break;
-      }
-
-      same_state=0;
-      prev = temp;
-      temp = temp->next;
-    }
-  }
-  
 }
 
 /* check to see if the hash contains the given state 
@@ -116,7 +70,7 @@ int hash_contains(hash_head * map, node * ptr){
 
   temp = hashTemp->head;
   if(temp==NULL) return 1;
-  while (temp->next!=NULL){
+  while (temp!=NULL){
     
     /* check two states, same_state 0 if the same, non 0 otherwise */
     for(int i=0; i<size_of_array; i++){
