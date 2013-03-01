@@ -40,6 +40,9 @@ int size_of_fringe;
 int curr_mem;
 void check_mem_usage();
 
+/* clears up memory in the fringe if needed */
+void prune();
+
 /* function for usage message */
 void usage();
 
@@ -65,5 +68,7 @@ int evaluate_cost(int current_index, node *current);
 int goal_test(node *current);
 void mem_bound_A(disk arr[]);
 
+/* printing lists */
+void print_List(node * head);
 
 #endif /* _AB_GAME_H_  */

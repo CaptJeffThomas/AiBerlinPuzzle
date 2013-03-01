@@ -562,3 +562,35 @@ int heuristic(short int curr_state[]){
 
 }
 
+void prune(){
+  node * worst_node = fringe_head;
+  node * temp = fringe_head;
+  int worst_val = 0;
+
+  while(temp->next != NULL){
+    if((temp->f_val - temp->g_val) > worst_val){
+      worst_node = temp;
+      worst_val = temp->f_val - temp->g_val;
+    }
+    temp = temp->next;
+  }
+
+  while (worst_node != NULL){
+    temp = worst_node;
+    worst_node = temp->next;
+    free(temp);
+    curr_mem -= sizeof(node);
+    size_of_fringe--;
+  }
+}
+
+void print_list(node * head){
+  node * temp = head;
+  while(temp!=NULL){
+    for (int i = 0; i<size_of_array; i++){
+      printf(" %d", temp->state[i]);
+    }
+    printf("\n");
+    temp=temp->next;
+  }
+}
