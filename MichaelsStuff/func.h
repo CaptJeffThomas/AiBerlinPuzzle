@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 /* maximum amount of memory allowable for search structures */
-#define MEMSIZE 1000000
+#define MEMSIZE 1000000000
 
 /* node structure for each disk (with corresponding large values) 
    representing states of the game */

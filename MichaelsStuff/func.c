@@ -4,7 +4,7 @@
 #include<math.h>
 #include"func.h"
 #include"hash.h"
-
+#include"closed.h"
 extern hash_head *closed_list;
 
 
@@ -20,7 +20,6 @@ input.txt\n\n    Options:\n        -u    display usage message.\n \
 
 /* ensuring we are within the memory usage constraints */
 void check_mem_usage(){
-  printf("current memory usage is: %d/%d\n", curr_mem, MEMSIZE);
   if (curr_mem > MEMSIZE){
     printf("Ran out of memory ... pruning :(\n\n");
     prune();
@@ -37,11 +36,11 @@ void disk_setup(int n, disk arr[]){
   //note that below it asks for clockwise order and this is arbitrary choice that would only be relevant to some1 
   //with a physical puzzle.  Regardless it guarantees similar ordering for both small and large disks.
   printf("Please enter the values of the large disks in clockwise order: \n"); 
-  gets(largeDisks); 
+  fgets(largeDisks, ((size_of_array * 2) + 5), stdin); 
   printf("\n"); 
 
   printf("Please enter the values of the small disks in clockwise order (use 0 to represent the empty slot): \n"); 
-  gets(smallDisks); 
+  fgets(smallDisks, ((size_of_array * 2) + 5), stdin); 
   printf("\n"); 
 
   //fills our arr with large disk values provided from users string 
@@ -164,7 +163,7 @@ void enqueue(short int newState[],short int path_cost){
   }
 
   /* check mem usage */
-  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
+  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int)));
   check_mem_usage();
 
   memset(new,0,(sizeof(node) + (size_of_array * sizeof(short int))));
@@ -213,7 +212,7 @@ void dequeue(node *current)
     copy_node(temp,current);
 
     /* reduce mem usage */
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
 
     free(temp);
     temp = NULL;
@@ -226,7 +225,7 @@ void dequeue(node *current)
     copy_node(temp,current);
     
     /* reduce mem usage */
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
 
     free(temp);
     temp = NULL;
@@ -244,18 +243,12 @@ void clear_queue()
   /* function runs through queue, deleting nodes */
   node *del = fringe_head; 
   node *temp = NULL;
-  printf("added states to the fringe\nNOTE: prints nodes backwards cause of stack\n");
-  while(del != NULL){
-    int y;
-    for(y = 0; y < size_of_array; y++){
-      printf("%d ",del->state[y]);
-    }
-    printf("\n");
 
+  while(del != NULL){
     temp = del->next;
 
     /* reduce mem usage */
-    curr_mem -= sizeof(node) * 8;
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
 
     free(del);
     del = temp;
@@ -376,17 +369,7 @@ void expand_state(node *current, disk arr[])
   int child_f_vals[num_states];
   for(x = 0; x < num_states; x++){
     child_f_vals[x] = (current->g_val + 1) + heuristic(child_states[x]);
-    printf("f value for child %d: %d\n",x,heuristic(child_states[x]));
   }
-
-  printf("child states\n");
-  for(x = 0; x < num_states; x++){
-    for(y = 0; y < size_of_array; y++){
-      printf("%d ",child_states[x][y]);
-    }
-    printf("\n");
-  }
-
   
   /* loop through child_f_vals, determining which is the most, and add that
      to the stack (-1 designates alreayd been added), ensures least is popped
@@ -430,16 +413,13 @@ void mem_bound_A(disk arr[])
   }
 
   /* add to and check mem usage */
-  curr_mem += (sizeof(node) * (size_of_array * sizeof(short int))) * 8;
+  curr_mem += (sizeof(node) * (size_of_array * sizeof(short int)));
   check_mem_usage();
 
   memset(current_node,0,(sizeof(node) + (size_of_array * sizeof(short int))));
   
   /* goal return value used for testing for goal state */
   int goal_state;
-
-  /* initialize closed/extended list(hash map) */
-  //closed_list = init_hash(size_of_array);
 
   /* initlialize fringe with one node (initial state of board) */
   size_of_fringe = 0;
@@ -455,8 +435,10 @@ void mem_bound_A(disk arr[])
 
   printf("Solution is: \n");
 
-  int z = 0;
+  int steps = 0;
+
   while(1){
+    steps++;
     /* check to see if fringe is empty, if so return failure */
     if(size_of_fringe <= 0){
       printf("Search could not produce goal state\n");
@@ -466,10 +448,10 @@ void mem_bound_A(disk arr[])
     /* remove best path node from fringe, assign to current - right now just removes head*/
     dequeue(current_node);
     
-    for(int y = 0; y < size_of_array; y++){
-	printf("%d ",current_node->state[y]);
+    for (int i=0; i<size_of_array; i++){
+      printf("%d ", current_node->state[i]);
     }
-    printf("\n");
+    printf("\t Step: %d\n", steps);
 
     /* get return value from goal test, if so return that its reached the goal */
     goal_state = goal_test(current_node);
@@ -478,32 +460,24 @@ void mem_bound_A(disk arr[])
       printf("Heuristic of goal: %d\n",heuristic(current_node->state));
       
       /* reduce mem usage */
-      curr_mem -= (sizeof(node) * (size_of_array * sizeof(short int))) * 8;
+      curr_mem -= (sizeof(node) * (size_of_array * sizeof(short int)));
 
       free(current_node);
       break;
     }
     
     /* check the closed list to see if the current state is in it */
-    //int check = hash_contains(closed_list,current_node);
-    //if(check == 1){
+    int check = closed_contains(current_node);
+    if(check == 1){
       /* if closed list doesnt contain a node, add it to the closed
 	 list and expand */
-      //insert_to_hash(closed_list,current_node);
-
-      //printf("added: ");
-      //for(int x = 0; x < size_of_array; x++){
-    //printf("%d ",current_node->state[x]);
-    //}
-    //printf("to the closed list !\n");
+      add_closed(current_node);
       
       /* insert all possible states from current node into fringe */
       expand_state(current_node,arr);
-      //}
-
-      //z++;
+    }
   }
-
+  
   /* free memory used for node assignment in SMA function */
   /* reduce mem usage */
   //curr_mem -= sizeof(node);
@@ -514,46 +488,46 @@ void mem_bound_A(disk arr[])
 //returns the number of elements adjacent to similar elements.  
 //maximizing this value provides our best-first solution
 int heuristic(short int curr_state[]){
-
- int grouped = size_of_array; 
- // number of similar elements grouped in the given stat
- //check if the first element is similar to the last
- if(curr_state[size_of_array - 1] == curr_state[0]){
+  
+  int grouped = size_of_array; 
+  // number of similar elements grouped in the given stat
+  //check if the first element is similar to the last
+  if(curr_state[size_of_array - 1] == curr_state[0]){
     grouped -= 2;
     //printf("simlar items on the edge of list %d \n", grouped);
- }
-
- //for loop checks the state from state[1] to state[end-1] for adjacent pairs
- int full = 0;
- for(int x = 0; x < size_of_array - 1; x++){
-   if(curr_state[x] == curr_state[x + 1]){
-     grouped--;
-     full++;
-     //printf("next item is similar %d \n", grouped);
- }
-
- if(  (curr_state[x] == 0) && (curr_state[x - 1] == 3) && (curr_state[x + 1] == 1) ) {
-  grouped--;
-  //printf("3 0 1 in the middle of list %d \n", grouped);
- }
- //printf("full: %d\n",full);
- if(full == 2){
-   grouped--;
-   full = 0;
-   //printf("full set of 3 together %d\n", grouped);
-   } 
- }
-
- //affirms the 0 lies between 3 and 1
- if(  (curr_state[0] == 0) && (curr_state[size_of_array - 1] == 3) && (curr_state[1]) == 1 ) {
-   grouped--;
- }
- if(  (curr_state[0] == 1) && (curr_state[size_of_array - 1] == 0) && (curr_state[size_of_array - 2] == 3) ) {
-   grouped--;
- }
-
- return grouped;
-
+  }
+  
+  //for loop checks the state from state[1] to state[end-1] for adjacent pairs
+  int full = 0;
+  for(int x = 0; x < size_of_array - 1; x++){
+    if(curr_state[x] == curr_state[x + 1]){
+      grouped--;
+      full++;
+      //printf("next item is similar %d \n", grouped);
+    }
+    
+    if(  (curr_state[x] == 0) && (curr_state[x - 1] == 3) && (curr_state[x + 1] == 1) ) {
+      grouped--;
+      //printf("3 0 1 in the middle of list %d \n", grouped);
+    }
+    //printf("full: %d\n",full);
+    if(full == 2){
+      grouped--;
+      full = 0;
+      //printf("full set of 3 together %d\n", grouped);
+    } 
+  }
+  
+  //affirms the 0 lies between 3 and 1
+  if(  (curr_state[0] == 0) && (curr_state[size_of_array - 1] == 3) && (curr_state[1]) == 1 ) {
+    grouped--;
+  }
+  if(  (curr_state[0] == 1) && (curr_state[size_of_array - 1] == 0) && (curr_state[size_of_array - 2] == 3) ) {
+    grouped--;
+  }
+  
+  return grouped;
+  
 }
 
 void prune(){
@@ -562,14 +536,8 @@ void prune(){
   node * temp = fringe_head;
   node * prev;
   int worst_val = 0;
-
+  
   while(temp->next != NULL){
-
-    printf("---- %d\n",worst_val);
-    for(int x = 0; x < size_of_array; x++){
-      printf("%d ",temp->state[x]);
-    }
-    printf("\n");
     if((temp->f_val - temp->g_val) > worst_val){
       worst_node = temp;
       prev_worst = prev;
@@ -586,17 +554,12 @@ void prune(){
   prev_worst->next = NULL;
 
   while (worst_node != NULL){
-    printf("+++\n");
-    for(int x = 0; x < size_of_array; x++){
-      printf("%d ",worst_node->state[x]);
-    }
-    printf("\n");
 
     temp = worst_node->next;
     free(worst_node);
     worst_node = temp;
 
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
     size_of_fringe--;
   }
   worst_node = NULL;
