@@ -5,12 +5,12 @@
 #include "hash.h"
 #include "func.h"
 
-extern hash_head * hash_map;
+extern hash_head * closed_list;
 
 /* initialize the hash */
 hash_head * init_hash(int size){
-  hash_map = malloc(sizeof(hash_head));
-  hash_head * temp = hash_map;
+  closed_list = malloc(sizeof(hash_head));
+  hash_head * temp = closed_list;
 
   for (int i = 1; i<size ; i++){
     temp->next = malloc(sizeof(hash_head));
@@ -19,7 +19,7 @@ hash_head * init_hash(int size){
 
   curr_mem += sizeof(hash_head) * size * 8;
   check_mem_usage();
-  return hash_map;
+  return closed_list;
 }
 
 /* the hash function */
@@ -123,7 +123,8 @@ int hash_contains(hash_head * map, node * ptr){
     }
 
     if (same_state==0) return 0;
-
+    
+    temp = temp->next;
   }
   return 1;
 }

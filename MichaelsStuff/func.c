@@ -3,8 +3,10 @@
 #include<string.h>
 #include<math.h>
 #include"func.h"
+#include"hash.h"
 
-node *tmp, *closedList = NULL;
+extern hash_head *closed_list;
+
 
 void usage()
 {
@@ -172,10 +174,8 @@ void enqueue(short int newState[],short int path_cost){
 
   /* run through inputted state and assign 
       values to node being added */
-  printf("\n");
   for(int x = 0; x < size_of_array; x++){
       new->state[x] = newState[x];
-      printf(" %d", new->state[x]);
   }
   
   /* check head if added as head, or to end of queue */
@@ -442,14 +442,8 @@ void mem_bound_A(disk arr[])
   /* goal return value used for testing for goal state */
   int goal_state;
 
-  /* initialize closed/extended list */
-  //  int closed_idx = 0;
-  disk closed[size_of_array];
-  memset(closed,0,(size_of_array * sizeof(disk)));
-
-  /* add to and check mem usage */
-  curr_mem += sizeof(closed);
-  check_mem_usage();
+  /* initialize closed/extended list(hash map) */
+  closed_list = init_hash(size_of_array);
 
   /* initlialize fringe with one node (initial state of board) */
   size_of_fringe = 0;
@@ -466,7 +460,7 @@ void mem_bound_A(disk arr[])
   printf("Solution is: \n");
 
   int z = 0;
-  while( z < 1){
+  while(1){
     /* check to see if fringe is empty, if so return failure */
     if(size_of_fringe <= 0){
       printf("Search could not produce goal state\n");
@@ -491,20 +485,33 @@ void mem_bound_A(disk arr[])
       curr_mem -= sizeof(node);
 
       free(current_node);
-      return;
+      break;
     }
     
-    /* insert all possible states from current node into fringe */
-    expand_state(current_node,arr);
+    /* check the closed list to see if the current state is in it */
+    int check = hash_contains(closed_list,current_node);
+    if(check == 1){
+      /* if closed list doesnt contain a node, add it to the closed
+	 list and expand */
+      insert_to_hash(closed_list,current_node);
 
-    z++;
+      printf("added: ");
+      for(int x = 0; x < size_of_array; x++){
+	printf("%d ",current_node->state[x]);
+      }
+      printf("to the closed list !");
+      
+      /* insert all possible states from current node into fringe */
+      expand_state(current_node,arr);
+    }
+
+    //z++;
   }
 
   /* free memory used for node assignment in SMA function */
   /* reduce mem usage */
-  curr_mem -= sizeof(node);
-  free(current_node);
-
+  //curr_mem -= sizeof(node);
+  //free(current_node);
 }
 
 

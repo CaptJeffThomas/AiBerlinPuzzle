@@ -15,6 +15,9 @@ struct hash_head{
   hash_head * next;
 };
 
+/* global hash_head pointer to closed_list hash map */
+hash_head *closed_list;
+
 hash_head * init_hash(int size);
 int hash(node * ptr);
 void insert_to_hash(hash_head * map, node * ptr);
