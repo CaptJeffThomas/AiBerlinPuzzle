@@ -157,8 +157,7 @@ void enqueue(short int newState[],short int path_cost){
 
   /* function to add node at the back of the queue */
   node *new = NULL;
-  new = malloc(sizeof(node) + (size_of_array * sizeof(short int)));
-  
+  new = malloc(sizeof(node) + (size_of_array * sizeof(short int)));  
   if(new == NULL){
     printf("ERROR: malloc failed \n");
     exit(EXIT_FAILURE);
@@ -169,8 +168,6 @@ void enqueue(short int newState[],short int path_cost){
   check_mem_usage();
 
   memset(new,0,(sizeof(node) + (size_of_array * sizeof(short int))));
-
-  
 
   /* run through inputted state and assign 
       values to node being added */
@@ -193,8 +190,6 @@ void enqueue(short int newState[],short int path_cost){
   }
 
   size_of_fringe++;
-
-
 }
 
 
@@ -218,7 +213,7 @@ void dequeue(node *current)
     copy_node(temp,current);
 
     /* reduce mem usage */
-    curr_mem -= sizeof(node) * 8;
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
 
     free(temp);
     temp = NULL;
@@ -231,7 +226,7 @@ void dequeue(node *current)
     copy_node(temp,current);
     
     /* reduce mem usage */
-    curr_mem -= sizeof(node) * 8;
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
 
     free(temp);
     temp = NULL;
@@ -435,7 +430,7 @@ void mem_bound_A(disk arr[])
   }
 
   /* add to and check mem usage */
-  curr_mem += sizeof(node);
+  curr_mem += (sizeof(node) * (size_of_array * sizeof(short int))) * 8;
   check_mem_usage();
 
   memset(current_node,0,(sizeof(node) + (size_of_array * sizeof(short int))));
@@ -483,7 +478,7 @@ void mem_bound_A(disk arr[])
       printf("Heuristic of goal: %d\n",heuristic(current_node->state));
       
       /* reduce mem usage */
-      curr_mem -= sizeof(node);
+      curr_mem -= (sizeof(node) * (size_of_array * sizeof(short int))) * 8;
 
       free(current_node);
       break;
@@ -506,7 +501,7 @@ void mem_bound_A(disk arr[])
       expand_state(current_node,arr);
       //}
 
-    //z++;
+      //z++;
   }
 
   /* free memory used for node assignment in SMA function */
@@ -557,31 +552,55 @@ int heuristic(short int curr_state[]){
    grouped--;
  }
 
-
  return grouped;
 
 }
 
 void prune(){
   node * worst_node = fringe_head;
+  node * prev_worst;
   node * temp = fringe_head;
+  node * prev;
   int worst_val = 0;
 
   while(temp->next != NULL){
+
+    printf("---- %d\n",worst_val);
+    for(int x = 0; x < size_of_array; x++){
+      printf("%d ",temp->state[x]);
+    }
+    printf("\n");
     if((temp->f_val - temp->g_val) > worst_val){
       worst_node = temp;
+      prev_worst = prev;
       worst_val = temp->f_val - temp->g_val;
     }
+    /* break on the first instance of the worst possible valuable */
+    if(worst_val == size_of_array){
+      break;
+    }
+    prev = temp;
     temp = temp->next;
   }
 
+  prev_worst->next = NULL;
+
   while (worst_node != NULL){
-    temp = worst_node;
-    worst_node = temp->next;
-    free(temp);
-    curr_mem -= sizeof(node);
+    printf("+++\n");
+    for(int x = 0; x < size_of_array; x++){
+      printf("%d ",worst_node->state[x]);
+    }
+    printf("\n");
+
+    temp = worst_node->next;
+    free(worst_node);
+    worst_node = temp;
+
+    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int))) * 8;
     size_of_fringe--;
   }
+  worst_node = NULL;
+  temp = NULL;
 }
 
 void print_list(){
