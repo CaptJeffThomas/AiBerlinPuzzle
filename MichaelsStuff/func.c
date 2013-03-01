@@ -220,7 +220,7 @@ void dequeue(node *current)
     /* reduce mem usage */
     curr_mem -= sizeof(node) * 8;
 
-    free(temp);
+    //free(temp);
     temp = NULL;
     fringe_head = NULL;
   }
@@ -233,7 +233,7 @@ void dequeue(node *current)
     /* reduce mem usage */
     curr_mem -= sizeof(node) * 8;
 
-    free(temp);
+    //free(temp);
     temp = NULL;
   }
   else{
@@ -393,26 +393,27 @@ void expand_state(node *current, disk arr[])
   }
 
   
-  /* loop through child_f_vals, determining which is the least, and add that
-     to the enqueue (-1 designates alreayd been added), ensures all states added once */
+  /* loop through child_f_vals, determining which is the most, and add that
+     to the stack (-1 designates alreayd been added), ensures least is popped
+     off first and all states added once */
   /* NOTE: states witht eh same f_val are added in order as they are processed */
-  int index = 0, min;
+  int index = 0, max;
   for(x = 0; x < num_states; x++){
     index = x;
-    min = child_f_vals[x];
-    /* if min == -1, reset min and index by finding first non -1 value */
-    if(min == -1){
+    max = child_f_vals[x];
+    /* if max == -1, reset min and index by finding first non -1 value */
+    if(max == -1){
       for(y = 0; y < num_states; y++){
 	if(child_f_vals[y] != -1){
-	  min = child_f_vals[y];
+	  max = child_f_vals[y];
 	  index = y;
 	}
       }
     }
     /* loop through child_vals, evaluateing to get the least f_val */
     for(y = 0; y < num_states; y++){
-      if(child_f_vals[y] < min && child_f_vals[y] != -1){
-	min = child_f_vals[y];
+      if(child_f_vals[y] > max && child_f_vals[y] != -1){
+	max = child_f_vals[y];
 	index = y;
       }
     }
@@ -499,7 +500,7 @@ void mem_bound_A(disk arr[])
       for(int x = 0; x < size_of_array; x++){
 	printf("%d ",current_node->state[x]);
       }
-      printf("to the closed list !");
+      printf("to the closed list !\n");
       
       /* insert all possible states from current node into fringe */
       expand_state(current_node,arr);
