@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-std=c99 -Wall -g -D_POSIX_SOURCE
 
 
-AB: main.c func.o 
+AB: main.c func.o hash.o
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 %.o: %.c %.h

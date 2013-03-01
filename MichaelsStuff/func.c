@@ -4,8 +4,6 @@
 #include<math.h>
 #include"func.h"
 
-#define NELEMS(x) (sizeof(x)/sizeof(x[0]))
-
 node *tmp, *closedList = NULL;
 
 void usage()
@@ -179,13 +177,6 @@ void enqueue(short int newState[],short int path_cost){
       new->state[x] = newState[x];
       printf(" %d", new->state[x]);
   }
- 
-
-  HASH_FIND_INT(closedList, &newState, tmp); //search the closed list to see if this state exists
-  if (tmp == NULL){  //if this state is not in the closed list, add it!
-         printf(" : New state being added to queue.  No match in closed list. \n\n");
-         HASH_ADD_INT(closedList, state, new);  /* state is the key */
-  }
   
   /* check head if added as head, or to end of queue */
   if(size_of_fringe == 0){
@@ -202,18 +193,6 @@ void enqueue(short int newState[],short int path_cost){
   }
 
   size_of_fringe++;
- 
-
-   HASH_FIND_INT(closedList,&newState,tmp); 
-   if (tmp != NULL){
-      printf("\n Newly added to hash is state: ");
-      for(int x = 0; x < size_of_array; x++){
-             printf(" %d", tmp->state[x]);
-      }
-      printf(" \n");
-   } else {
-        printf("The hash did not add the state properly \n \n");
-   }  
 
 
 }
@@ -239,7 +218,7 @@ void dequeue(node *current)
     copy_node(temp,current);
 
     /* reduce mem usage */
-    curr_mem -= sizeof(temp) * 8;
+    curr_mem -= sizeof(node) * 8;
 
     free(temp);
     temp = NULL;
@@ -252,7 +231,7 @@ void dequeue(node *current)
     copy_node(temp,current);
     
     /* reduce mem usage */
-    curr_mem -= sizeof(temp) * 8;
+    curr_mem -= sizeof(node) * 8;
 
     free(temp);
     temp = NULL;
@@ -281,7 +260,7 @@ void clear_queue()
     temp = del->next;
 
     /* reduce mem usage */
-    curr_mem -= sizeof(del) * 8;
+    curr_mem -= sizeof(node) * 8;
 
     free(del);
     del = temp;
@@ -455,7 +434,7 @@ void mem_bound_A(disk arr[])
   }
 
   /* add to and check mem usage */
-  curr_mem += sizeof(current_node);
+  curr_mem += sizeof(node);
   check_mem_usage();
 
   memset(current_node,0,(sizeof(node) + (size_of_array * sizeof(short int))));
@@ -509,7 +488,7 @@ void mem_bound_A(disk arr[])
       printf("Heuristic of goal: %d\n",heuristic(current_node->state));
       
       /* reduce mem usage */
-      curr_mem -= sizeof(current_node);
+      curr_mem -= sizeof(node);
 
       free(current_node);
       return;
@@ -523,7 +502,7 @@ void mem_bound_A(disk arr[])
 
   /* free memory used for node assignment in SMA function */
   /* reduce mem usage */
-  curr_mem -= sizeof(current_node);
+  curr_mem -= sizeof(node);
   free(current_node);
 
 }

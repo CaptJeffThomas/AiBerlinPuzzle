@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "uthash.h"
 
 /* maximum amount of memory allowable for search structures */
 #define MEMSIZE 1000000
@@ -24,7 +23,6 @@ typedef struct d_node {
 typedef struct a_node {
   short int f_val; // sum of g() + h() calculated
   short int g_val; // path cost up till now
-  UT_hash_handle hh;         /* makes this structure hashable */
   struct a_node *next; //pointer to next node
   
   short int state[]; // lrg and sml disk value corresponding to moving to some state

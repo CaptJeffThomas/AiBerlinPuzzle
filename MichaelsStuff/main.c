@@ -5,9 +5,12 @@
 #include<string.h>
 #include<stdbool.h>
 #include"func.h"
+#include"hash.h"
 
 bool rand_flag = false;
 bool file_flag = false;
+
+hash_head * hash_map;
 
 int main(int argc, char *argv[])
 {
