@@ -1,9 +1,19 @@
+/*****************************************************************
+ NAME: Croydon Enders, Michael Hnatiw, Jeff Thomas
+ CLASS/ASSIGNMENT: CMPT355 Project #1
+ Instructor: Calin Anton
+*****************************************************************/
+
+#ifndef _AB_GAME_C_
+#define _AB_GAME_C_
+
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
 #include<math.h>
-#include"func.h"
+#include"global.h"
 #include"closed.h"
+#include"fringe.h"
 
 void usage()
 {
@@ -11,7 +21,7 @@ void usage()
   printf(" AB program imposes a single Agent Search Method to complete a game.\n\n \
     NOTE: given no argumenta with a number to produce defined layout from \
 input.txt\n\n    Options:\n        -u    display usage message.\n \
-        -r <number> use number as n value to produce random board layout\n \
+       -r <number> use number as n value to produce random board layout\n \
        -f <number> use number as n value, and read input frm file to produce board layout\n \
     Example:\n         ./AB 10\n");
 }
@@ -154,126 +164,6 @@ void random_disk_setup(int n, disk arr[]){
   
 }
 
-void enqueue(short int newState[],short int path_cost)
-{
-  /* function to add node at the top of the stack */
-
-  node *new = NULL;
-  new = malloc(sizeof(node) + (size_of_array * sizeof(short int)));  
-  if(new == NULL){
-    printf("ERROR: malloc failed \n");
-    exit(EXIT_FAILURE);
-  }
-
-  /* check mem usage */
-  curr_mem += (sizeof(node) + (size_of_array * sizeof(short int)));
-  check_mem_usage();
-
-  memset(new,0,(sizeof(node) + (size_of_array * sizeof(short int))));
-
-  /* run through inputted state and assign 
-      values to node being added */
-  for(int x = 0; x < size_of_array; x++){
-      new->state[x] = newState[x];
-  }
-  
-  /* check whether the node to be added is in the closed list
-   *** ENSURES NO DUPLICATE STATES ARE ADDED TO THE FRINGE ****/
-  int check = closed_contains(new);
-  if(check == 1){
-    /* if state node not in the closed list, add it to the closed list */
-    add_closed(new);
-      
-    /* add node to the fringe as the head or push node onto the head */
-    if(size_of_fringe == 0){
-      new->next = NULL;
-      fringe_head = new;
-      new->g_val = 0;
-      new->f_val = new->g_val + heuristic(new->state);
-    }
-    else{
-      new->next = fringe_head;
-      fringe_head = new;
-      new->g_val = path_cost + 1;
-      new->f_val = new->g_val + heuristic(new->state);
-    }
-
-    size_of_fringe++;
-  }
-  else{
-    /* else if current node is in the closed list, free
-       its memory, reduce memory usage, and dont add it*/
-    free(new);
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
-  }
-
-}
-
-void copy_node(node *org, node *dest)
-{
-  /* function copy values of one node to another */
-  dest->f_val = org->f_val;
-  dest->g_val = org->g_val;
-  for(int x = 0; x < size_of_array; x++){
-    dest->state[x] = org->state[x];
-  }
-}
-
-void dequeue(node *current)
-{
-  /* function to remove node from start of queue */
-
-  node *temp = fringe_head;
-  if(size_of_fringe == 1){
-    /* call function to copy values from not to current node */
-    copy_node(temp,current);
-    /* reduce mem usage */
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
-    /* free memory */
-    free(temp);
-    temp = NULL;
-    fringe_head = NULL;
-  }
-  else if(size_of_fringe > 1){
-    
-    fringe_head = temp->next;
-
-    /* call function to copy values from not to current node */
-    copy_node(temp,current);    
-    /* reduce mem usage */
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
-    /* free memory */
-    free(temp);
-    temp = NULL;
-  }
-  else{
-    printf("ERROR: fringe is empty can't dequeue\n");
-    exit(EXIT_FAILURE);
-  }
-
-  size_of_fringe--;
-}
-
-void clear_queue()
-{
-  /* function runs through queue, deleting all nodes */
-  node *del = fringe_head; 
-  node *temp = NULL;
-
-  while(del != NULL){
-    temp = del->next;
-
-    /* reduce mem usage */
-    curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
-
-    /* free node */
-    free(del);
-    del = temp;
-  }
-  del = NULL;
-  temp = NULL;
-}
-
 int goal_test(node *current)
 {
   /* function inspects each short in the the current nodes state and performs 
@@ -321,6 +211,15 @@ int goal_test(node *current)
   return 1;
 }
 
+void copy_node(node *org, node *dest)
+{
+  /* function copy values of one node to another */
+  dest->f_val = org->f_val;
+  dest->g_val = org->g_val;
+  for(int x = 0; x < size_of_array; x++){
+    dest->state[x] = org->state[x];
+  }
+}
 
 void swap(int new_index, int disk_val, int current_index, short int arr[])
 {
@@ -416,7 +315,7 @@ void expand_state(node *current, disk arr[])
       }
     }
     /* add least f_val child to the fringe, set that childs index to -1 */
-    enqueue(child_states[index],current->g_val);
+    push_to_fringe(child_states[index],current->g_val);
     child_f_vals[index] = -1;
   }
   
@@ -454,13 +353,13 @@ void mem_bound_A(disk arr[])
   for(x = 0; x < size_of_array; x++){
     temp[x] = arr[x].sml_val;
   }
-  /* enqueue first node into fringe (initial state of small disks) 
+  /* push first node into fringe (initial state of small disks) 
    NOTE: path_cost argument doesnt matter for the first node, so pass 0*/
-  enqueue(temp,0);
+  push_to_fringe(temp,0);
 
   printf("Solution is: \n");
 
-  /*variable to count how many steps it takes to get a solution */
+  /* variable to count how many steps it takes to get a solution */
   int steps = 0;
 
   /* loop through, expanding possible states, and reducing duplicates using
@@ -475,7 +374,7 @@ void mem_bound_A(disk arr[])
     }
 
     /* remove best path node from fringe, assign to current - right now just removes head*/
-    dequeue(current_node);
+    pop_from_fringe(current_node);
     
     for (x = 0; x < size_of_array; x++){
       printf("%d ", current_node->state[x]);
@@ -498,21 +397,10 @@ void mem_bound_A(disk arr[])
       break;
     }
     
-    /* check the closed list to see if the current state is in it */
-    /*int check = closed_contains(current_node);
-    if(check == 1){
-      printf("state: ");
-      for(int x = 0; x < size_of_array; x++){
-	printf("%d ",current_node->state[x]);
-      }
-      printf("not in closed list\n");*/
-      /* if closed list doesnt contain a node, add it to the closed
-	 list and expand */
-      //add_closed(current_node);
-      
-      /* insert all possible states from current node into fringe */
-      expand_state(current_node,arr);
-      //}
+    /* expand current state insert all possible states from current node into fringe */
+
+    /* NOTE: checking of closed list done in push_to_fringe function int fringe.c */
+    expand_state(current_node,arr);
   }
   
 }
@@ -565,12 +453,16 @@ void reduce_mem_usage(){
      the fringe stack (removing all those nodes with worse heuristic
      values */
 
+  /* values to keep track of current node, worst case node, and the nodes before
+     the current and worst case */
   node * worst_node = fringe_head;
   node * prev_worst = NULL;
   node * temp = fringe_head;
   node * prev = NULL;
   int worst_val = 0;
   
+  /* loop through whole fringe, destermining current worst case state value
+     and setting node pointers properly */
   while(temp->next != NULL){
     if((temp->f_val - temp->g_val) > worst_val){
       worst_node = temp;
@@ -584,23 +476,27 @@ void reduce_mem_usage(){
     prev = temp;
     temp = temp->next;
   }
-
+  /* ensure node before worst case breaks off and connects to null */
   prev_worst->next = NULL;
 
+  /* loop from the worst node to the end of the stack, deleting all nodes
+     till null */
   while(worst_node != NULL){
-          printf("removed state: ");
-      for(int x = 0; x < size_of_array; x++){
+    printf("removed state: ");
+    for(int x = 0; x < size_of_array; x++){
 	printf("%d ",worst_node->state[x]);
-      }
-      printf("\n");
+    }
+    printf("\n");
+
     temp = worst_node->next;
     free(worst_node);
     worst_node = temp;
-
+    /* decrease memory usage and size of fringe */
     curr_mem -= (sizeof(node) + (size_of_array * sizeof(short int)));
     size_of_fringe--;
-
   }
   worst_node = NULL;
   temp = NULL;
 }
+
+#endif /* _AB_GAME_C_ */

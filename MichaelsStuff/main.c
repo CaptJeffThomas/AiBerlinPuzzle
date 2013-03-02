@@ -1,11 +1,18 @@
+/*****************************************************************
+ NAME: Croydon Enders, Michael Hnatiw, Jeff Thomas
+ CLASS/ASSIGNMENT: CMPT355 Project #1
+ Instructor: Calin Anton
+*****************************************************************/
+
 #define _POSIX_C_SOURCE 2 /* defined feature macro for getopt()*/
 #include<unistd.h>
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
 #include<stdbool.h>
-#include"func.h"
-#include"hash.h"
+#include"global.h"
+#include"closed.h"
+#include"fringe.h"
 
 /* global variables for option flags */
 bool rand_flag = false;
@@ -90,6 +97,8 @@ int main(int argc, char *argv[])
   mem_bound_A(disks);
   
   /* clear memory in fringe before exit */
-  clear_queue();
+  clear_fringe();
+  /* clear memory in clsoed list before exit */
+  clear_closed();
   return 0;
 }

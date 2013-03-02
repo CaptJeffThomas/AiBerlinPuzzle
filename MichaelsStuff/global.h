@@ -1,8 +1,11 @@
-
+/*****************************************************************
+ NAME: Croydon Enders, Michael Hnatiw, Jeff Thomas
+ CLASS/ASSIGNMENT: CMPT355 Project #1
+ Instructor: Calin Anton
+*****************************************************************/
 
 #ifndef _AB_GAME_H_
 #define _AB_GAME_H_
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,10 +35,6 @@ typedef struct a_node {
 /* global variable for size of disk array (and what all short int arrays will be) */
 int size_of_array;
 
-/* global fringe pointer and size variable used to dynamically build fringe */
-node *fringe_head;
-int size_of_fringe;
-
 /* global variable to track memory usage and associated function for checking mem usage */
 int curr_mem;
 void check_mem_usage();
@@ -51,11 +50,7 @@ void random_disk_setup(int input, disk arr[]);
 void disk_setup(int input, disk arr[]);
 void fileDisk_setup(int input, disk arr[]);
 
-/* functions for queue structure made from a_nodes */
-void enqueue(short int state[], short int path_cost);
-void dequeue(node *current);
-void clear_queue();
-
+/* function implements heuristic and returns its value */
 int heuristic(short int curr_state[]);
 
 /* functions for creating states and expanding current node */
