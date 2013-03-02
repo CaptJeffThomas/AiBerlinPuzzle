@@ -7,10 +7,9 @@
 #include"func.h"
 #include"hash.h"
 
+/* global variables for option flags */
 bool rand_flag = false;
 bool file_flag = false;
-
-hash_head * hash_map;
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +18,9 @@ int main(int argc, char *argv[])
   /* use of getopt to determine whether to create random numbers
      for the disks or use the number specified and read disk values
      from a predeteremined file */
+  
+  /*NOTE: options not implemented, functions exists just need to modify
+    this main file if they are desired */
   while((optn = getopt(argc,argv,"hfr")) != -1){
     switch(optn){
     case 'r':
@@ -41,15 +43,29 @@ int main(int argc, char *argv[])
   /* initialize curr_mem */
   curr_mem = 0;
 
-  /* initialize disk arrays */
+  /**** set size_of_array from input, or else
+	produce usage message and exit ****/
+  if(argv[1] != NULL){
+    size_of_array = atoi(argv[1]);
+  }
+  else{
+    usage();
+    return 1;
+  }
+  
+  /* disk array used to represent disk board layout */
   disk disks[size_of_array];
-  curr_mem += sizeof(disks);
+  
+  /* chceck memory usage */
+  curr_mem += sizeof(disks);  
   check_mem_usage();
 
+  /* initialize disk array and set up the board layout */
   memset(disks,0,(size_of_array * sizeof(disk)));
-  size_of_array = atoi(argv[1]);
   disk_setup(size_of_array, disks);
 
+
+  /* print large disk and small disk layout, as well as the initial state */
   printf(" --- Large Disks --- \n");
   int x;
   for(x = 0; x < size_of_array; x++){
@@ -69,9 +85,11 @@ int main(int argc, char *argv[])
   }
   printf("\n\n");
 
+  /* call function to emunlate simple memory-bounded A* algorithm 
+     on the disk board */
   mem_bound_A(disks);
   
-  /* clear fringe before exit */
+  /* clear memory in fringe before exit */
   clear_queue();
   return 0;
 }

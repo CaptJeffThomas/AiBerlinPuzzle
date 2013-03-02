@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 /* maximum amount of memory allowable for search structures */
-#define MEMSIZE 1000000000
+#define MEMSIZE 1000000
 
 /* node structure for each disk (with corresponding large values) 
    representing states of the game */
@@ -41,7 +41,7 @@ int curr_mem;
 void check_mem_usage();
 
 /* clears up memory in the fringe if needed */
-void prune();
+void reduce_mem_usage();
 
 /* function for usage message */
 void usage();
@@ -67,8 +67,5 @@ void expand_state(node *current,disk arr[]);
 int evaluate_cost(int current_index, node *current);
 int goal_test(node *current);
 void mem_bound_A(disk arr[]);
-
-/* printing lists */
-void print_list();
 
 #endif /* _AB_GAME_H_  */
